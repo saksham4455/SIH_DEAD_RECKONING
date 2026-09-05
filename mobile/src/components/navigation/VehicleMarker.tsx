@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface VehicleMarkerProps {
   heading: number; // in degrees (0 to 360)
@@ -77,13 +78,13 @@ const styles = StyleSheet.create({
   },
   radarRing: {
     position: 'absolute',
-    borderWidth: 1.5,
+    borderWidth: dimensions.borderWidth.normal,
     borderStyle: 'dashed',
     backgroundColor: 'rgba(0, 229, 255, 0.04)',
   },
   middleRing: {
     position: 'absolute',
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     backgroundColor: 'rgba(0, 229, 255, 0.08)',
   },
   headingContainer: {
@@ -109,23 +110,23 @@ const styles = StyleSheet.create({
   },
   centerDot: {
     position: 'absolute',
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    width: dimensions.iconDot.xs,
+    height: dimensions.iconDot.xs,
+    borderRadius: dimensions.iconDot.xs / 2,
   },
   headingBadge: {
     position: 'absolute',
     bottom: -14,
-    backgroundColor: 'rgba(11, 15, 25, 0.85)',
+    backgroundColor: colors.background.overlay,
     paddingHorizontal: 5,
     paddingVertical: 1,
-    borderRadius: 4,
-    borderWidth: 0.5,
+    borderRadius: dimensions.borderRadius.xs,
+    borderWidth: dimensions.borderWidth.hairline,
     borderColor: colors.background.surfaceBorder,
   },
   headingText: {
     color: colors.text.secondary,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
   },
 });

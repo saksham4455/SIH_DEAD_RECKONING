@@ -5,6 +5,7 @@ import { Card } from '../common/Card';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface RoadAnomalyTickerProps {
   anomalyEvents: AnomalyEvent[];
@@ -98,16 +99,16 @@ export const RoadAnomalyTicker: React.FC<RoadAnomalyTickerProps> = ({
 
 const styles = StyleSheet.create({
   eventCountBadge: {
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    backgroundColor: colors.status.errorSubtle,
     borderColor: 'rgba(239, 68, 68, 0.3)',
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: dimensions.borderRadius.sm,
   },
   eventCountText: {
     color: colors.status.error,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
   },
   emptyContainer: {
@@ -123,8 +124,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(35, 50, 82, 0.4)',
+    borderBottomWidth: dimensions.borderWidth.thin,
+    borderBottomColor: colors.border.subtle,
   },
   lastItem: {
     borderBottomWidth: 0,
@@ -136,9 +137,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: dimensions.iconDot.md,
+    height: dimensions.iconDot.md,
+    borderRadius: dimensions.iconDot.md / 2,
     marginRight: spacing.sm,
   },
   eventType: {
@@ -148,20 +149,20 @@ const styles = StyleSheet.create({
   },
   timestampText: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     marginTop: 2,
   },
   rightCol: {
     marginLeft: spacing.sm,
   },
   confidenceBadge: {
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: dimensions.borderRadius.sm,
   },
   confidenceText: {
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
   },
 });

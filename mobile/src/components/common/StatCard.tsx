@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, StyleProp, ViewStyle } from 'react-native';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface StatCardProps {
   label: string;
@@ -37,8 +38,8 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.background.surfaceSubtle,
     borderColor: colors.background.surfaceBorder,
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: dimensions.borderWidth.thin,
+    borderRadius: dimensions.borderRadius.md,
     padding: spacing.sm,
     flex: 1,
     minWidth: 100,
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.medium,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
     marginBottom: spacing.xxs,
   },
   valueRow: {
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     marginTop: spacing.xxs,
   },
 });

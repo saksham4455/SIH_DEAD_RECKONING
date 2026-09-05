@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 export interface DebugOverlayToggleProps {
   isDebugVisible: boolean;
@@ -62,28 +63,28 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.xs,
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: dimensions.borderRadius.md,
+    borderWidth: dimensions.borderWidth.thin,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 64,
+    minHeight: dimensions.controlHeight.toggle,
   },
   btnNeutral: {
     backgroundColor: colors.background.surfaceSubtle,
     borderColor: colors.background.surfaceBorder,
   },
   btnCyanActive: {
-    backgroundColor: 'rgba(0, 229, 255, 0.12)',
+    backgroundColor: colors.accent.cyanSubtle,
     borderColor: colors.accent.cyan,
-    borderWidth: 1.5,
+    borderWidth: dimensions.borderWidth.normal,
   },
   disabled: {
     opacity: 0.4,
   },
   btnIconDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: dimensions.iconDot.sm,
+    height: dimensions.iconDot.sm,
+    borderRadius: dimensions.iconDot.sm / 2,
     marginBottom: 4,
   },
   btnIconDotActive: {
@@ -95,17 +96,17 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: colors.text.secondary,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
     textAlign: 'center',
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
   },
   btnTextActive: {
     color: colors.accent.cyan,
     fontWeight: typography.fontWeights.heavy,
   },
   tag: {
-    fontSize: typography.fontSizes.xs - 4,
+    fontSize: typography.fontSizes.micro,
     marginTop: 2,
     textAlign: 'center',
     fontWeight: typography.fontWeights.semibold,

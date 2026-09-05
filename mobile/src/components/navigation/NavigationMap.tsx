@@ -5,6 +5,7 @@ import { VehicleMarker } from './VehicleMarker';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface NavigationMapProps {
   navigationState: NavigationState;
@@ -88,9 +89,9 @@ export const NavigationMap: React.FC<NavigationMapProps> = ({
 const styles = StyleSheet.create({
   mapContainer: {
     height: 240,
-    backgroundColor: '#080C16',
-    borderRadius: 12,
-    borderWidth: 1,
+    backgroundColor: colors.background.tactical,
+    borderRadius: dimensions.borderRadius.xl,
+    borderWidth: dimensions.borderWidth.thin,
     borderColor: colors.background.surfaceBorder,
     overflow: 'hidden',
     position: 'relative',
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(35, 50, 82, 0.4)',
+    backgroundColor: colors.border.subtle,
   },
   gridHorizontal2: {
     position: 'absolute',
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(35, 50, 82, 0.4)',
+    backgroundColor: colors.border.subtle,
   },
   gridHorizontal3: {
     position: 'absolute',
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: 'rgba(35, 50, 82, 0.4)',
+    backgroundColor: colors.border.subtle,
   },
   gridVertical1: {
     position: 'absolute',
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 1,
-    backgroundColor: 'rgba(35, 50, 82, 0.4)',
+    backgroundColor: colors.border.subtle,
   },
   gridVertical2: {
     position: 'absolute',
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 1,
-    backgroundColor: 'rgba(35, 50, 82, 0.4)',
+    backgroundColor: colors.border.subtle,
   },
   gridVertical3: {
     position: 'absolute',
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 1,
-    backgroundColor: 'rgba(35, 50, 82, 0.4)',
+    backgroundColor: colors.border.subtle,
   },
   roadNetwork: {
     ...StyleSheet.absoluteFillObject,
@@ -160,15 +161,15 @@ const styles = StyleSheet.create({
     height: '140%',
     backgroundColor: 'rgba(30, 41, 59, 0.7)',
     borderColor: 'rgba(0, 229, 255, 0.25)',
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
+    borderLeftWidth: dimensions.borderWidth.thin,
+    borderRightWidth: dimensions.borderWidth.thin,
     transform: [{ rotate: '-35deg' }],
   },
   roadCenterLine: {
     position: 'absolute',
     width: 2,
     height: '140%',
-    borderLeftWidth: 2,
+    borderLeftWidth: dimensions.borderWidth.thick,
     borderLeftColor: 'rgba(0, 229, 255, 0.4)',
     borderStyle: 'dashed',
     transform: [{ rotate: '-35deg' }],
@@ -179,8 +180,8 @@ const styles = StyleSheet.create({
     height: '80%',
     backgroundColor: 'rgba(30, 41, 59, 0.5)',
     borderColor: 'rgba(59, 130, 246, 0.2)',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
+    borderTopWidth: dimensions.borderWidth.thin,
+    borderBottomWidth: dimensions.borderWidth.thin,
     transform: [{ rotate: '55deg' }, { translateX: -30 }],
   },
   crosshairH: {
@@ -210,32 +211,32 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   hudCoordinates: {
-    backgroundColor: 'rgba(11, 15, 25, 0.85)',
+    backgroundColor: colors.background.overlay,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: 6,
-    borderWidth: 1,
+    borderRadius: dimensions.borderRadius.sm,
+    borderWidth: dimensions.borderWidth.thin,
     borderColor: colors.background.surfaceBorder,
   },
   hudCoordLabel: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
   },
   hudCoordValue: {
     color: colors.accent.cyan,
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.semibold,
-    fontFamily: 'monospace',
+    fontFamily: typography.fontFamilies.mono,
     marginTop: 2,
   },
   compassBox: {
-    backgroundColor: 'rgba(11, 15, 25, 0.85)',
+    backgroundColor: colors.background.overlay,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: 6,
-    borderWidth: 1,
+    borderRadius: dimensions.borderRadius.sm,
+    borderWidth: dimensions.borderWidth.thin,
     borderColor: colors.background.surfaceBorder,
     alignItems: 'center',
     minWidth: 50,
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
   },
   compassDegree: {
     color: colors.accent.cyan,
-    fontSize: typography.fontSizes.xs - 1,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.medium,
   },
   hudBottom: {
@@ -263,34 +264,34 @@ const styles = StyleSheet.create({
   surfaceTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(11, 15, 25, 0.85)',
+    backgroundColor: colors.background.overlay,
     paddingHorizontal: spacing.xs + 2,
     paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 0.5,
+    borderRadius: dimensions.borderRadius.xs,
+    borderWidth: dimensions.borderWidth.hairline,
     borderColor: colors.background.surfaceBorder,
   },
   surfaceDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: dimensions.iconDot.sm,
+    height: dimensions.iconDot.sm,
+    borderRadius: dimensions.iconDot.sm / 2,
     backgroundColor: colors.accent.cyan,
     marginRight: 4,
   },
   surfaceTagText: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
-    letterSpacing: 0.5,
+    fontSize: typography.fontSizes.xxs,
+    letterSpacing: typography.letterSpacing.medium,
   },
   mapMatchText: {
     color: colors.accent.cyan,
-    fontSize: typography.fontSizes.xs - 1,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.semibold,
-    backgroundColor: 'rgba(11, 15, 25, 0.85)',
+    backgroundColor: colors.background.overlay,
     paddingHorizontal: spacing.xs + 2,
     paddingVertical: 2,
-    borderRadius: 4,
-    borderWidth: 0.5,
+    borderRadius: dimensions.borderRadius.xs,
+    borderWidth: dimensions.borderWidth.hairline,
     borderColor: colors.background.surfaceBorder,
   },
 });

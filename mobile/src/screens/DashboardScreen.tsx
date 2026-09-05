@@ -32,11 +32,12 @@ import { StatCard } from '../components/common/StatCard';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import { dimensions } from '../theme/dimensions';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
-  // Phase 7: Local mock frontend debug state
+  // Phase 7 & 8: Local mock frontend debug state
   const [isOutageSimulated, setIsOutageSimulated] = useState<boolean>(false);
   const [isRecordingLogs, setIsRecordingLogs] = useState<boolean>(false);
   const [isDebugVisible, setIsDebugVisible] = useState<boolean>(true);
@@ -245,7 +246,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
         )}
 
         {/* ========================================================= */}
-        {/* 5. SESSION & DEBUG CONTROLS (PHASE 7 LOCAL MOCK)          */}
+        {/* 5. SESSION & DEBUG CONTROLS (PHASE 7 & 8)                 */}
         {/* ========================================================= */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>SESSION CONTROLS</Text>
@@ -276,7 +277,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            SMART INDIA HACKATHON • DEAD RECKONING TELEMETRY (PHASE 7)
+            SMART INDIA HACKATHON • DEAD RECKONING TELEMETRY (PHASE 8)
           </Text>
         </View>
       </ScrollView>
@@ -300,17 +301,17 @@ const styles = StyleSheet.create({
   outageBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    backgroundColor: colors.status.errorSubtle,
     borderColor: colors.status.error,
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: dimensions.borderWidth.thin,
+    borderRadius: dimensions.borderRadius.md,
     padding: spacing.sm,
     marginBottom: spacing.md,
   },
   outageBannerDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: dimensions.iconDot.lg,
+    height: dimensions.iconDot.lg,
+    borderRadius: dimensions.iconDot.lg / 2,
     backgroundColor: colors.status.error,
     marginRight: spacing.sm,
   },
@@ -321,11 +322,11 @@ const styles = StyleSheet.create({
     color: colors.status.error,
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.heavy,
-    letterSpacing: 1,
+    letterSpacing: typography.letterSpacing.wide,
   },
   outageBannerText: {
     color: colors.text.secondary,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     marginTop: 2,
   },
   header: {
@@ -345,7 +346,7 @@ const styles = StyleSheet.create({
     color: colors.accent.cyan,
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.heavy,
-    letterSpacing: 1.5,
+    letterSpacing: typography.letterSpacing.widest,
   },
   appTitle: {
     color: colors.text.primary,
@@ -354,54 +355,54 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   confidencePill: {
-    backgroundColor: 'rgba(0, 229, 255, 0.1)',
+    backgroundColor: colors.accent.cyanSubtle,
     borderColor: 'rgba(0, 229, 255, 0.35)',
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: 8,
+    borderRadius: dimensions.borderRadius.md,
     alignItems: 'flex-end',
   },
   confidenceLabel: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 3,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
   },
   confidenceValue: {
     color: colors.accent.cyan,
     fontSize: typography.fontSizes.md,
     fontWeight: typography.fontWeights.heavy,
-    fontFamily: 'monospace',
+    fontFamily: typography.fontFamilies.mono,
   },
   recordingBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    backgroundColor: colors.status.warningSubtle,
     borderColor: colors.status.warning,
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     paddingHorizontal: spacing.sm,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: dimensions.borderRadius.sm,
   },
   recordingBadgeDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: dimensions.iconDot.sm,
+    height: dimensions.iconDot.sm,
+    borderRadius: dimensions.iconDot.sm / 2,
     backgroundColor: colors.status.warning,
     marginRight: 6,
   },
   recordingBadgeText: {
     color: colors.status.warning,
-    fontSize: typography.fontSizes.xs - 3,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
   },
   fusionModeContainer: {
     marginTop: spacing.xs,
   },
   sectionHeader: {
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
   sectionHeaderRow: {
@@ -412,26 +413,26 @@ const styles = StyleSheet.create({
   overlayHiddenTag: {
     backgroundColor: 'rgba(100, 116, 139, 0.2)',
     borderColor: 'rgba(100, 116, 139, 0.4)',
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: dimensions.borderRadius.xs,
   },
   overlayHiddenTagText: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 4,
+    fontSize: typography.fontSizes.micro,
     fontWeight: typography.fontWeights.bold,
   },
   sectionTitle: {
     color: colors.text.primary,
     fontSize: typography.fontSizes.sm,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 1,
+    letterSpacing: typography.letterSpacing.wide,
     textTransform: 'uppercase',
   },
   sectionSubtitle: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 1,
+    fontSize: typography.fontSizes.xs,
     marginTop: 2,
   },
   statsRow: {
@@ -444,15 +445,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.background.surface,
     borderColor: colors.background.surfaceBorder,
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: dimensions.borderWidth.thin,
+    borderRadius: dimensions.borderRadius.md,
     padding: spacing.md,
     marginBottom: spacing.md,
   },
   debugHiddenDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: dimensions.iconDot.md,
+    height: dimensions.iconDot.md,
+    borderRadius: dimensions.iconDot.md / 2,
     backgroundColor: colors.accent.cyan,
     marginRight: spacing.sm,
   },
@@ -463,41 +464,42 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
   },
   debugHiddenText: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     marginTop: 2,
   },
   footer: {
     marginTop: spacing.lg,
     paddingVertical: spacing.md,
     alignItems: 'center',
-    borderTopWidth: 1,
+    borderTopWidth: dimensions.borderWidth.thin,
     borderTopColor: colors.background.surfaceBorder,
   },
   footerText: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
-    letterSpacing: 0.8,
+    fontSize: typography.fontSizes.xxs,
+    letterSpacing: typography.letterSpacing.wide,
   },
   sessionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 229, 255, 0.1)',
+    backgroundColor: colors.accent.cyanSubtle,
     borderColor: 'rgba(0, 229, 255, 0.4)',
-    borderWidth: 1.5,
-    borderRadius: 10,
+    borderWidth: dimensions.borderWidth.normal,
+    borderRadius: dimensions.borderRadius.lg,
+    minHeight: dimensions.controlHeight.button,
     paddingVertical: spacing.md,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
   },
   sessionButtonDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: dimensions.iconDot.md,
+    height: dimensions.iconDot.md,
+    borderRadius: dimensions.iconDot.md / 2,
     backgroundColor: colors.accent.cyan,
     marginRight: spacing.sm,
   },
@@ -505,6 +507,6 @@ const styles = StyleSheet.create({
     color: colors.accent.cyan,
     fontSize: typography.fontSizes.sm,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 1.2,
+    letterSpacing: typography.letterSpacing.wider,
   },
 });

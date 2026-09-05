@@ -5,6 +5,7 @@ import { Card } from '../common/Card';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface ThermalCompensationCardProps {
   thermalState: ThermalState;
@@ -88,13 +89,13 @@ export const ThermalCompensationCard: React.FC<ThermalCompensationCardProps> = (
 
 const styles = StyleSheet.create({
   tempBadge: {
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: dimensions.borderRadius.sm,
   },
   tempBadgeText: {
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
   },
   metricsContainer: {
@@ -109,16 +110,16 @@ const styles = StyleSheet.create({
   },
   mapMatchItem: {
     width: '100%',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(35, 50, 82, 0.4)',
+    borderTopWidth: dimensions.borderWidth.thin,
+    borderTopColor: colors.border.subtle,
     paddingTop: spacing.sm,
     marginTop: spacing.xs,
   },
   metricLabel: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
     marginBottom: 2,
   },
   valueRow: {
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: typography.fontSizes.xl,
     fontWeight: typography.fontWeights.heavy,
-    fontFamily: 'monospace',
+    fontFamily: typography.fontFamilies.mono,
   },
   metricUnit: {
     color: colors.text.secondary,
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
   },
   metricNote: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     marginTop: 2,
   },
 });

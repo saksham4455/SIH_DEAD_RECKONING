@@ -4,6 +4,7 @@ import { Card } from '../common/Card';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 import { SimulateOutageButton } from './SimulateOutageButton';
 import { RecordingControls } from './RecordingControls';
 import { DebugOverlayToggle } from './DebugOverlayToggle';
@@ -86,8 +87,8 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 1,
+    borderRadius: dimensions.borderRadius.sm,
+    borderWidth: dimensions.borderWidth.thin,
   },
   badgeStandby: {
     backgroundColor: 'rgba(100, 116, 139, 0.15)',
@@ -97,21 +98,21 @@ const styles = StyleSheet.create({
     color: colors.text.muted,
   },
   badgeOutage: {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    backgroundColor: colors.status.errorSubtle,
     borderColor: colors.status.error,
   },
   badgeTextOutage: {
     color: colors.status.error,
   },
   badgeRecording: {
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    backgroundColor: colors.status.warningSubtle,
     borderColor: colors.status.warning,
   },
   badgeTextRecording: {
     color: colors.status.warning,
   },
   badgeText: {
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
   },
   controlsRow: {

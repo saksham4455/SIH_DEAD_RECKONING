@@ -5,6 +5,7 @@ import { Card } from '../common/Card';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface AiInferencePanelProps {
   inferenceStats: InferenceStats;
@@ -85,16 +86,16 @@ export const AiInferencePanel: React.FC<AiInferencePanelProps> = ({
 
 const styles = StyleSheet.create({
   mockBadge: {
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    backgroundColor: colors.accent.indigoSubtle,
     borderColor: 'rgba(99, 102, 241, 0.4)',
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: dimensions.borderRadius.sm,
   },
   mockBadgeText: {
     color: '#818CF8',
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
   },
   grid: {
@@ -108,16 +109,16 @@ const styles = StyleSheet.create({
   },
   cellLabel: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
     marginBottom: 2,
   },
   cellValuePrimary: {
     color: colors.text.primary,
     fontSize: typography.fontSizes.md,
     fontWeight: typography.fontWeights.bold,
-    fontFamily: 'monospace',
+    fontFamily: typography.fontFamilies.mono,
   },
   valueWithUnit: {
     flexDirection: 'row',
@@ -126,7 +127,7 @@ const styles = StyleSheet.create({
   cellValue: {
     fontSize: typography.fontSizes.xl,
     fontWeight: typography.fontWeights.bold,
-    fontFamily: 'monospace',
+    fontFamily: typography.fontFamilies.mono,
   },
   cellUnit: {
     color: colors.text.secondary,
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
   },
   cellSubtitle: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     marginTop: 2,
   },
   disclaimerContainer: {
@@ -144,19 +145,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.md,
     paddingTop: spacing.sm,
-    borderTopWidth: 1,
+    borderTopWidth: dimensions.borderWidth.thin,
     borderTopColor: colors.background.surfaceBorder,
   },
   disclaimerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: dimensions.iconDot.sm,
+    height: dimensions.iconDot.sm,
+    borderRadius: dimensions.iconDot.sm / 2,
     backgroundColor: '#818CF8',
     marginRight: spacing.xs,
   },
   disclaimerText: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     flex: 1,
   },
 });

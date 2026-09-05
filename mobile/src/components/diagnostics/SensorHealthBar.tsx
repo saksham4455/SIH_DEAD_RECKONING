@@ -6,6 +6,7 @@ import { StatusBadge } from '../common/StatusBadge';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface SensorHealthBarProps {
   sensorHealth: SensorHealth;
@@ -83,25 +84,25 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.xs,
     backgroundColor: colors.background.surfaceSubtle,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(35, 50, 82, 0.4)',
+    borderRadius: dimensions.borderRadius.sm,
+    borderWidth: dimensions.borderWidth.thin,
+    borderColor: colors.border.subtle,
     marginBottom: spacing.xs,
   },
   statusIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: dimensions.iconDot.md,
+    height: dimensions.iconDot.md,
+    borderRadius: dimensions.iconDot.md / 2,
     marginRight: spacing.sm,
   },
   sensorLabel: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
   },
   sensorState: {
-    fontSize: typography.fontSizes.xs - 1,
+    fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.bold,
     marginTop: 1,
   },

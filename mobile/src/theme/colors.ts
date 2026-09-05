@@ -5,6 +5,14 @@ export const colors = {
     surfaceSubtle: '#182238',
     surfaceBorder: '#233252',
     surfaceHighlight: '#1E2B45',
+    tactical: '#080C16',
+    overlay: 'rgba(11, 15, 25, 0.85)',
+  },
+  border: {
+    subtle: 'rgba(35, 50, 82, 0.4)',
+    medium: 'rgba(35, 50, 82, 0.6)',
+    default: '#233252',
+    highlight: '#00E5FF',
   },
   text: {
     primary: '#F8FAFC',
@@ -14,8 +22,11 @@ export const colors = {
   },
   accent: {
     cyan: '#00E5FF',
+    cyanSubtle: 'rgba(0, 229, 255, 0.12)',
     blue: '#3B82F6',
+    blueSubtle: 'rgba(59, 130, 246, 0.12)',
     indigo: '#6366F1',
+    indigoSubtle: 'rgba(99, 102, 241, 0.15)',
   },
   fusionMode: {
     GNSS_LOCKED: '#10B981',
@@ -31,8 +42,11 @@ export const colors = {
   },
   status: {
     healthy: '#10B981',
+    healthySubtle: 'rgba(16, 185, 129, 0.12)',
     warning: '#F59E0B',
+    warningSubtle: 'rgba(245, 158, 11, 0.15)',
     error: '#EF4444',
+    errorSubtle: 'rgba(239, 68, 68, 0.15)',
     disabled: '#475569',
   },
 };

@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, StyleProp, ViewStyle } from 'react-native';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface CardProps {
   title?: string;
@@ -51,8 +52,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.background.surface,
     borderColor: colors.background.surfaceBorder,
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: dimensions.borderWidth.thin,
+    borderRadius: dimensions.borderRadius.xl,
     padding: spacing.md,
     marginBottom: spacing.md,
   },
@@ -63,13 +64,14 @@ const styles = StyleSheet.create({
   cardCompact: {
     padding: spacing.sm,
     marginBottom: spacing.sm,
+    borderRadius: dimensions.borderRadius.lg,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.md,
-    borderBottomWidth: 1,
+    borderBottomWidth: dimensions.borderWidth.thin,
     borderBottomColor: colors.background.surfaceBorder,
     paddingBottom: spacing.xs,
   },
@@ -80,7 +82,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontSize: typography.fontSizes.sm,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.8,
+    letterSpacing: typography.letterSpacing.wide,
     textTransform: 'uppercase',
   },
   subtitle: {

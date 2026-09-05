@@ -12,11 +12,12 @@ import { RootStackParamList, SessionStatus } from '../types/navigation';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import { dimensions } from '../theme/dimensions';
 
 type SessionScreenProps = NativeStackScreenProps<RootStackParamList, 'Session'>;
 
 export const SessionScreen: React.FC<SessionScreenProps> = ({ navigation }) => {
-  // Phase 7: Local frontend session lifecycle (READY -> RECORDING -> STOPPED)
+  // Phase 7 & 8: Local frontend session lifecycle (READY -> RECORDING -> STOPPED)
   const [status, setStatus] = useState<SessionStatus>('READY');
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
 
@@ -24,7 +25,7 @@ export const SessionScreen: React.FC<SessionScreenProps> = ({ navigation }) => {
   const isStopped = status === 'STOPPED';
   const isReady = status === 'READY';
 
-  // Local duration timer when recording
+  // Local duration timer when recording (mock UI only)
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     if (isRecording) {
@@ -221,7 +222,7 @@ export const SessionScreen: React.FC<SessionScreenProps> = ({ navigation }) => {
         {/* ── Footer ── */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            SMART INDIA HACKATHON • SESSION SCREEN (PHASE 7)
+            SMART INDIA HACKATHON • SESSION SCREEN (PHASE 8)
           </Text>
         </View>
       </View>
@@ -249,6 +250,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     paddingRight: spacing.sm,
     marginBottom: spacing.md,
+    minHeight: 36,
   },
   backArrow: {
     color: colors.accent.cyan,
@@ -259,13 +261,13 @@ const styles = StyleSheet.create({
     color: colors.accent.cyan,
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 1,
+    letterSpacing: typography.letterSpacing.wide,
   },
   headerSuperTitle: {
     color: colors.accent.cyan,
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.heavy,
-    letterSpacing: 1.5,
+    letterSpacing: typography.letterSpacing.widest,
   },
   headerTitle: {
     color: colors.text.primary,
@@ -280,22 +282,22 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: dimensions.iconDot.xl,
+    height: dimensions.iconDot.xl,
+    borderRadius: dimensions.iconDot.xl / 2,
     marginRight: spacing.sm,
   },
   statusText: {
     fontSize: typography.fontSizes.md,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 1,
+    letterSpacing: typography.letterSpacing.wide,
   },
   // ── Info Card ──
   infoCard: {
     backgroundColor: colors.background.surface,
     borderColor: colors.background.surfaceBorder,
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: dimensions.borderWidth.thin,
+    borderRadius: dimensions.borderRadius.xl,
     padding: spacing.md,
     marginBottom: spacing.lg,
   },
@@ -309,34 +311,34 @@ const styles = StyleSheet.create({
     color: colors.text.muted,
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.8,
+    letterSpacing: typography.letterSpacing.wide,
   },
   infoValue: {
     color: colors.text.primary,
     fontSize: typography.fontSizes.sm,
     fontWeight: typography.fontWeights.semibold,
-    fontFamily: 'monospace',
+    fontFamily: typography.fontFamilies.mono,
   },
   durationValue: {
     color: colors.accent.cyan,
     fontSize: typography.fontSizes.xl,
     fontWeight: typography.fontWeights.heavy,
-    fontFamily: 'monospace',
+    fontFamily: typography.fontFamilies.mono,
   },
   divider: {
-    height: 1,
+    height: dimensions.borderWidth.thin,
     backgroundColor: colors.background.surfaceBorder,
   },
   statusBadge: {
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: dimensions.borderRadius.sm,
   },
   statusBadgeText: {
-    fontSize: typography.fontSizes.xs - 1,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
   },
   // ── Controls ──
   controlsContainer: {
@@ -349,38 +351,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: dimensions.controlHeight.button,
     paddingVertical: spacing.md,
-    borderRadius: 10,
-    borderWidth: 1.5,
+    borderRadius: dimensions.borderRadius.lg,
+    borderWidth: dimensions.borderWidth.normal,
   },
   startButton: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: colors.status.healthySubtle,
     borderColor: 'rgba(16, 185, 129, 0.4)',
   },
   stopButton: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: colors.status.errorSubtle,
     borderColor: 'rgba(239, 68, 68, 0.4)',
   },
   controlButtonDisabled: {
     opacity: 0.35,
   },
   controlDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: dimensions.iconDot.md,
+    height: dimensions.iconDot.md,
+    borderRadius: dimensions.iconDot.md / 2,
     marginRight: spacing.sm,
   },
   startButtonText: {
     color: colors.status.healthy,
     fontSize: typography.fontSizes.sm,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 1,
+    letterSpacing: typography.letterSpacing.wide,
   },
   stopButtonText: {
     color: colors.status.error,
     fontSize: typography.fontSizes.sm,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 1,
+    letterSpacing: typography.letterSpacing.wide,
   },
   controlButtonTextDisabled: {
     opacity: 0.5,
@@ -391,21 +394,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.background.surface,
     borderColor: colors.background.surfaceBorder,
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: dimensions.borderWidth.thin,
+    borderRadius: dimensions.borderRadius.md,
     padding: spacing.sm,
     marginBottom: spacing.lg,
   },
   disclaimerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: dimensions.iconDot.sm,
+    height: dimensions.iconDot.sm,
+    borderRadius: dimensions.iconDot.sm / 2,
     backgroundColor: colors.accent.indigo,
     marginRight: spacing.xs,
   },
   disclaimerText: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 1,
+    fontSize: typography.fontSizes.xxs,
     flex: 1,
   },
   // ── Footer ──
@@ -413,12 +416,12 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     paddingVertical: spacing.md,
     alignItems: 'center',
-    borderTopWidth: 1,
+    borderTopWidth: dimensions.borderWidth.thin,
     borderTopColor: colors.background.surfaceBorder,
   },
   footerText: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
-    letterSpacing: 0.8,
+    fontSize: typography.fontSizes.xxs,
+    letterSpacing: typography.letterSpacing.wide,
   },
 });

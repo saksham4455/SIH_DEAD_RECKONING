@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, StyleProp, ViewStyle } from 'react-native';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 export type StatusBadgeVariant = 'success' | 'warning' | 'error' | 'neutral' | 'info';
 
@@ -83,33 +84,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: 16,
-    borderWidth: 1,
+    borderRadius: dimensions.borderRadius.pill,
+    borderWidth: dimensions.borderWidth.thin,
     alignSelf: 'flex-start',
   },
   badgeSmall: {
     paddingHorizontal: spacing.xs,
     paddingVertical: spacing.xxs,
-    borderRadius: 10,
+    borderRadius: dimensions.borderRadius.lg,
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: dimensions.iconDot.md,
+    height: dimensions.iconDot.md,
+    borderRadius: dimensions.iconDot.md / 2,
     marginRight: spacing.xs,
   },
   dotSmall: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: dimensions.iconDot.sm,
+    height: dimensions.iconDot.sm,
+    borderRadius: dimensions.iconDot.sm / 2,
     marginRight: spacing.xxs,
   },
   label: {
     fontSize: typography.fontSizes.xs,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.5,
+    letterSpacing: typography.letterSpacing.medium,
   },
   labelSmall: {
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
   },
 });

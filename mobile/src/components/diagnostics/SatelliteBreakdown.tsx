@@ -5,6 +5,7 @@ import { Card } from '../common/Card';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface SatelliteBreakdownProps {
   satelliteBreakdown: SatelliteBreakdownType;
@@ -118,28 +119,28 @@ export const SatelliteBreakdown: React.FC<SatelliteBreakdownProps> = ({
 
 const styles = StyleSheet.create({
   totalBadge: {
-    backgroundColor: 'rgba(0, 229, 255, 0.1)',
+    backgroundColor: colors.accent.cyanSubtle,
     borderColor: 'rgba(0, 229, 255, 0.3)',
-    borderWidth: 1,
+    borderWidth: dimensions.borderWidth.thin,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: dimensions.borderRadius.sm,
   },
   totalBadgeText: {
     color: colors.accent.cyan,
-    fontSize: typography.fontSizes.xs - 1,
+    fontSize: typography.fontSizes.xxs,
     fontWeight: typography.fontWeights.bold,
   },
   rowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(35, 50, 82, 0.5)',
+    borderBottomWidth: dimensions.borderWidth.thin,
+    borderBottomColor: colors.border.subtle,
   },
   primaryRow: {
-    backgroundColor: 'rgba(249, 115, 22, 0.05)',
-    borderRadius: 8,
+    backgroundColor: 'rgba(249, 115, 22, 0.06)',
+    borderRadius: dimensions.borderRadius.md,
     paddingHorizontal: spacing.xs,
   },
   nameCol: {
@@ -150,9 +151,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   constellationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: dimensions.iconDot.md,
+    height: dimensions.iconDot.md,
+    borderRadius: dimensions.iconDot.md / 2,
     marginRight: 6,
   },
   constellationName: {
@@ -163,17 +164,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(249, 115, 22, 0.2)',
     paddingHorizontal: 4,
     paddingVertical: 1,
-    borderRadius: 3,
+    borderRadius: dimensions.borderRadius.xs,
     marginLeft: 6,
   },
   primaryTagText: {
     color: colors.constellations.NavIC,
-    fontSize: typography.fontSizes.xs - 3,
+    fontSize: typography.fontSizes.micro,
     fontWeight: typography.fontWeights.bold,
   },
   constellationFullName: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     marginTop: 2,
     marginLeft: 14,
   },
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
   },
   countLabel: {
     color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 3,
+    fontSize: typography.fontSizes.micro,
   },
   signalCol: {
     flex: 2,
@@ -200,12 +201,12 @@ const styles = StyleSheet.create({
   },
   signalDb: {
     color: colors.text.secondary,
-    fontSize: typography.fontSizes.xs - 1,
-    fontFamily: 'monospace',
+    fontSize: typography.fontSizes.xxs,
+    fontFamily: typography.fontFamilies.mono,
   },
   signalBarTrack: {
     height: 6,
-    backgroundColor: 'rgba(35, 50, 82, 0.6)',
+    backgroundColor: colors.border.medium,
     borderRadius: 3,
     overflow: 'hidden',
   },

@@ -4,6 +4,7 @@ import { FusionMode } from '../../types/navigation';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { dimensions } from '../../theme/dimensions';
 
 interface FusionModeBadgeProps {
   fusionMode: FusionMode;
@@ -24,21 +25,21 @@ export const FusionModeBadge: React.FC<FusionModeBadgeProps> = ({ fusionMode }) 
           label: 'GNSS LOCKED',
           sublabel: 'Full Constellation Fusion',
           color: colors.fusionMode.GNSS_LOCKED,
-          badgeBg: 'rgba(16, 185, 129, 0.12)',
+          badgeBg: colors.status.healthySubtle,
         };
       case 'GNSS_DEGRADED':
         return {
           label: 'GNSS DEGRADED',
           sublabel: 'Multipath / Signal Attenuation',
           color: colors.fusionMode.GNSS_DEGRADED,
-          badgeBg: 'rgba(245, 158, 11, 0.12)',
+          badgeBg: colors.status.warningSubtle,
         };
       case 'DEAD_RECKONING':
         return {
           label: 'DEAD RECKONING',
           sublabel: 'Pure Inertial / Wheel Odometry',
           color: colors.fusionMode.DEAD_RECKONING,
-          badgeBg: 'rgba(239, 68, 68, 0.12)',
+          badgeBg: colors.status.errorSubtle,
         };
       case 'REACQUIRING':
         return {
@@ -86,13 +87,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 10,
-    borderWidth: 1.5,
+    borderRadius: dimensions.borderRadius.lg,
+    borderWidth: dimensions.borderWidth.normal,
   },
   statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: dimensions.iconDot.lg,
+    height: dimensions.iconDot.lg,
+    borderRadius: dimensions.iconDot.lg / 2,
     marginRight: spacing.sm,
   },
   textContainer: {
@@ -101,11 +102,11 @@ const styles = StyleSheet.create({
   modeTitle: {
     fontSize: typography.fontSizes.sm,
     fontWeight: typography.fontWeights.bold,
-    letterSpacing: 0.8,
+    letterSpacing: typography.letterSpacing.wide,
   },
   modeSubtitle: {
     color: colors.text.secondary,
-    fontSize: typography.fontSizes.xs - 2,
+    fontSize: typography.fontSizes.xxs,
     marginTop: 1,
   },
 });
