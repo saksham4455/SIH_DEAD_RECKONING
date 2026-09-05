@@ -6,19 +6,37 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
+  TouchableOpacity,
 } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 import { mockDashboardData } from '../data/mockData';
+
+// Navigation components
 import { NavigationMap } from '../components/navigation/NavigationMap';
+
+// Diagnostic components (composed directly — Phase 5)
 import { FusionModeBadge } from '../components/diagnostics/FusionModeBadge';
-import { DiagnosticPanel } from '../components/diagnostics/DiagnosticPanel';
+import { SatelliteBreakdown } from '../components/diagnostics/SatelliteBreakdown';
+import { NavicWeightIndicator } from '../components/diagnostics/NavicWeightIndicator';
+import { AiInferencePanel } from '../components/diagnostics/AiInferencePanel';
+import { RoadAnomalyTicker } from '../components/diagnostics/RoadAnomalyTicker';
+import { ThermalCompensationCard } from '../components/diagnostics/ThermalCompensationCard';
+import { SensorHealthBar } from '../components/diagnostics/SensorHealthBar';
 import { SessionControls } from '../components/diagnostics/SessionControls';
+
+// Common components
 import { StatCard } from '../components/common/StatCard';
+
+// Theme
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
-export const DashboardScreen: React.FC = () => {
-  // Ingest static mock data for Phase 4
+type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
+
+export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
+  // Ingest static mock data for Phase 5
   const data = mockDashboardData;
   const { navigationState, mapMatchConfidence } = data;
 
@@ -60,9 +78,13 @@ export const DashboardScreen: React.FC = () => {
         {/* ========================================================= */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>NAVIGATION SURFACE</Text>
-          <Text style={styles.sectionSubtitle}>Tactical Vector & Dead Reckoning Core</Text>
+          <Text style={styles.sectionSubtitle}>Tactical Vector &amp; Dead Reckoning Core</Text>
         </View>
 
+        {/*
+          NavigationMap internally renders VehicleMarker.
+          Architecture: DashboardScreen → NavigationMap → VehicleMarker
+        */}
         <NavigationMap
           navigationState={navigationState}
           mapMatchConfidence={mapMatchConfidence}
@@ -108,33 +130,56 @@ export const DashboardScreen: React.FC = () => {
         {/* ========================================================= */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>SYSTEM DIAGNOSTICS</Text>
-          <Text style={styles.sectionSubtitle}>Sensors, Constellations & Edge AI</Text>
+          <Text style={styles.sectionSubtitle}>Sensors, Constellations &amp; Edge AI</Text>
         </View>
 
-        <DiagnosticPanel
-          sensorHealth={data.sensorHealth}
-          satelliteBreakdown={data.satelliteBreakdown}
-          navicWeight={data.navicWeight}
-          inferenceStats={data.inferenceStats}
+        {/* Hardware sensor health — uses StatusBadge internally */}
+        <SensorHealthBar sensorHealth={data.sensorHealth} />
+
+        {/* Multi-GNSS constellation reception */}
+        <SatelliteBreakdown satelliteBreakdown={data.satelliteBreakdown} />
+
+        {/* NavIC fusion weight indicator */}
+        <NavicWeightIndicator navicWeight={data.navicWeight} />
+
+        {/* AI / Visual odometry inference panel */}
+        <AiInferencePanel inferenceStats={data.inferenceStats} />
+
+        {/* Thermal bias compensation & map-match confidence */}
+        <ThermalCompensationCard
           thermalState={data.thermalState}
-          anomalyEvents={data.anomalyEvents}
           mapMatchConfidence={mapMatchConfidence}
         />
+
+        {/* Road surface anomaly event ticker */}
+        <RoadAnomalyTicker anomalyEvents={data.anomalyEvents} />
 
         {/* ========================================================= */}
         {/* 5. SESSION & DEMO CONTROLS (PLACEHOLDER)                  */}
         {/* ========================================================= */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>SESSION CONTROLS</Text>
-          <Text style={styles.sectionSubtitle}>Simulation & Scenario Testing</Text>
+          <Text style={styles.sectionSubtitle}>Simulation &amp; Scenario Testing</Text>
         </View>
 
         <SessionControls />
 
+        {/* ========================================================= */}
+        {/* 6. START SESSION NAVIGATION (Phase 6)                      */}
+        {/* ========================================================= */}
+        <TouchableOpacity
+          style={styles.sessionButton}
+          onPress={() => navigation.navigate('Session')}
+          activeOpacity={0.7}
+        >
+          <View style={styles.sessionButtonDot} />
+          <Text style={styles.sessionButtonText}>START SESSION</Text>
+        </TouchableOpacity>
+
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            SMART INDIA HACKATHON • DEAD RECKONING TELEMETRY (PHASE 4)
+            SMART INDIA HACKATHON • DEAD RECKONING TELEMETRY (PHASE 6)
           </Text>
         </View>
       </ScrollView>
@@ -232,5 +277,30 @@ const styles = StyleSheet.create({
     color: colors.text.muted,
     fontSize: typography.fontSizes.xs - 2,
     letterSpacing: 0.8,
+  },
+  sessionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 229, 255, 0.1)',
+    borderColor: 'rgba(0, 229, 255, 0.4)',
+    borderWidth: 1.5,
+    borderRadius: 10,
+    paddingVertical: spacing.md,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  sessionButtonDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.accent.cyan,
+    marginRight: spacing.sm,
+  },
+  sessionButtonText: {
+    color: colors.accent.cyan,
+    fontSize: typography.fontSizes.sm,
+    fontWeight: typography.fontWeights.bold,
+    letterSpacing: 1.2,
   },
 });

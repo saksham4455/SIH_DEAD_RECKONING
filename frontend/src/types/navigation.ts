@@ -60,3 +60,9 @@ export interface DashboardData {
   navicWeight: number;
   mapMatchConfidence: number;
 }
+
+// ─── Phase 6: App Navigation Types ───────────────────────────────
+export type RootStackParamList = {
+  Dashboard: undefined;
+  Session: undefined;
+};
