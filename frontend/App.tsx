@@ -1,19 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { DashboardScreen } from './src/screens/DashboardScreen';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>SIH Dead Reckoning - Frontend Skeleton</Text>
-    </View>
-  );
+  return <DashboardScreen />;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
