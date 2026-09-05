@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,27 +8,79 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types/navigation';
+import { RootStackParamList, SessionStatus } from '../types/navigation';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
 
 type SessionScreenProps = NativeStackScreenProps<RootStackParamList, 'Session'>;
 
-type SessionStatus = 'READY' | 'RECORDING';
-
 export const SessionScreen: React.FC<SessionScreenProps> = ({ navigation }) => {
+  // Phase 7: Local frontend session lifecycle (READY -> RECORDING -> STOPPED)
   const [status, setStatus] = useState<SessionStatus>('READY');
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
 
   const isRecording = status === 'RECORDING';
+  const isStopped = status === 'STOPPED';
+  const isReady = status === 'READY';
+
+  // Local duration timer when recording
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRecording]);
 
   const handleStart = () => {
+    if (isStopped) {
+      setElapsedSeconds(0);
+    }
     setStatus('RECORDING');
   };
 
   const handleStop = () => {
-    setStatus('READY');
+    setStatus('STOPPED');
   };
+
+  // Format elapsed time as MM:SS
+  const formatDuration = (totalSeconds: number): string => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Status visual attributes
+  const getStatusColor = (): string => {
+    switch (status) {
+      case 'RECORDING':
+        return colors.status.error;
+      case 'STOPPED':
+        return colors.status.warning;
+      case 'READY':
+      default:
+        return colors.status.healthy;
+    }
+  };
+
+  const getStatusBadgeLabel = (): string => {
+    switch (status) {
+      case 'RECORDING':
+        return 'IN PROGRESS';
+      case 'STOPPED':
+        return 'COMPLETED';
+      case 'READY':
+      default:
+        return 'STANDBY';
+    }
+  };
+
+  const statusColor = getStatusColor();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -54,16 +106,16 @@ export const SessionScreen: React.FC<SessionScreenProps> = ({ navigation }) => {
           <View
             style={[
               styles.statusDot,
-              { backgroundColor: isRecording ? colors.status.error : colors.status.healthy },
+              { backgroundColor: statusColor },
             ]}
           />
           <Text
             style={[
               styles.statusText,
-              { color: isRecording ? colors.status.error : colors.status.healthy },
+              { color: statusColor },
             ]}
           >
-            {isRecording ? 'RECORDING' : 'READY'}
+            {status}
           </Text>
         </View>
 
@@ -78,7 +130,14 @@ export const SessionScreen: React.FC<SessionScreenProps> = ({ navigation }) => {
 
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>DURATION</Text>
-            <Text style={styles.durationValue}>00:00</Text>
+            <Text
+              style={[
+                styles.durationValue,
+                isStopped && { color: colors.status.warning },
+              ]}
+            >
+              {formatDuration(elapsedSeconds)}
+            </Text>
           </View>
 
           <View style={styles.divider} />
@@ -89,28 +148,24 @@ export const SessionScreen: React.FC<SessionScreenProps> = ({ navigation }) => {
               style={[
                 styles.statusBadge,
                 {
-                  borderColor: isRecording
-                    ? `${colors.status.error}55`
-                    : `${colors.status.healthy}55`,
-                  backgroundColor: isRecording
-                    ? `${colors.status.error}1A`
-                    : `${colors.status.healthy}1A`,
+                  borderColor: `${statusColor}55`,
+                  backgroundColor: `${statusColor}1A`,
                 },
               ]}
             >
               <Text
                 style={[
                   styles.statusBadgeText,
-                  { color: isRecording ? colors.status.error : colors.status.healthy },
+                  { color: statusColor },
                 ]}
               >
-                {isRecording ? 'IN PROGRESS' : 'STANDBY'}
+                {getStatusBadgeLabel()}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* ── Controls ── */}
+        {/* ── Controls (Start / Stop) ── */}
         <View style={styles.controlsContainer}>
           <TouchableOpacity
             style={[
@@ -129,7 +184,7 @@ export const SessionScreen: React.FC<SessionScreenProps> = ({ navigation }) => {
                 isRecording && styles.controlButtonTextDisabled,
               ]}
             >
-              START
+              {isStopped ? 'RESTART' : 'START'}
             </Text>
           </TouchableOpacity>
 
@@ -159,14 +214,14 @@ export const SessionScreen: React.FC<SessionScreenProps> = ({ navigation }) => {
         <View style={styles.disclaimer}>
           <View style={styles.disclaimerDot} />
           <Text style={styles.disclaimerText}>
-            UI placeholder only. No sensor recording or telemetry collection is active.
+            Local frontend mock state only. Zero real sensor, backend, or disk telemetry recording is active.
           </Text>
         </View>
 
         {/* ── Footer ── */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            SMART INDIA HACKATHON • SESSION SCREEN (PHASE 6)
+            SMART INDIA HACKATHON • SESSION SCREEN (PHASE 7)
           </Text>
         </View>
       </View>

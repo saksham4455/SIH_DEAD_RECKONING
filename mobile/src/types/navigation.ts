@@ -60,7 +60,10 @@ export interface DashboardData {
   navicWeight: number;
   mapMatchConfidence: number;
 }
+// ─── Phase 6 & 7: App Navigation & Session Types ─────────────────
 export type RootStackParamList = {
   Dashboard: undefined;
   Session: undefined;
 };
+
+export type SessionStatus = 'READY' | 'RECORDING' | 'STOPPED';

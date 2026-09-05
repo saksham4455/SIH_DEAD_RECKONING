@@ -1,70 +1,116 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { Card } from '../common/Card';
 import { colors } from '../../theme/colors';
 import { spacing } from '../../theme/spacing';
 import { typography } from '../../theme/typography';
+import { SimulateOutageButton } from './SimulateOutageButton';
+import { RecordingControls } from './RecordingControls';
+import { DebugOverlayToggle } from './DebugOverlayToggle';
 
-export const SessionControls: React.FC = () => {
+export interface SessionControlsProps {
+  isOutageSimulated?: boolean;
+  onToggleOutage?: () => void;
+  isRecording?: boolean;
+  onToggleRecording?: () => void;
+  isDebugVisible?: boolean;
+  onToggleDebug?: () => void;
+}
+
+export const SessionControls: React.FC<SessionControlsProps> = ({
+  isOutageSimulated = false,
+  onToggleOutage = () => {},
+  isRecording = false,
+  onToggleRecording = () => {},
+  isDebugVisible = true,
+  onToggleDebug = () => {},
+}) => {
+  const getHeaderBadge = () => {
+    if (isOutageSimulated) {
+      return (
+        <View style={[styles.badge, styles.badgeOutage]}>
+          <Text style={[styles.badgeText, styles.badgeTextOutage]}>
+            OUTAGE SIMULATED
+          </Text>
+        </View>
+      );
+    }
+    if (isRecording) {
+      return (
+        <View style={[styles.badge, styles.badgeRecording]}>
+          <Text style={[styles.badgeText, styles.badgeTextRecording]}>
+            LOGGING ACTIVE
+          </Text>
+        </View>
+      );
+    }
+    return (
+      <View style={[styles.badge, styles.badgeStandby]}>
+        <Text style={[styles.badgeText, styles.badgeTextStandby]}>
+          MOCK CONTROLS
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <Card
       title="SESSION CONTROLS"
-      subtitle="Simulation & Telemetry Logging (Future Phase)"
-      headerRight={
-        <View style={styles.standbyBadge}>
-          <Text style={styles.standbyText}>STANDBY</Text>
-        </View>
-      }
+      subtitle="Simulation & Telemetry Diagnostics (Local UI State)"
+      headerRight={getHeaderBadge()}
     >
       <View style={styles.controlsRow}>
-        {/* Simulate Outage Button Placeholder */}
-        <TouchableOpacity
-          style={[styles.controlBtn, styles.btnDanger]}
-          activeOpacity={0.7}
-          disabled={true}
-        >
-          <View style={[styles.btnIconDot, { backgroundColor: colors.status.error }]} />
-          <Text style={styles.btnDangerText}>SIMULATE OUTAGE</Text>
-          <Text style={styles.disabledTag}>DISABLED (PHASE 4)</Text>
-        </TouchableOpacity>
+        {/* Simulate Outage Button */}
+        <SimulateOutageButton
+          isOutageSimulated={isOutageSimulated}
+          onToggleOutage={onToggleOutage}
+        />
 
-        {/* Recording Controls Placeholder */}
-        <TouchableOpacity
-          style={[styles.controlBtn, styles.btnNeutral]}
-          activeOpacity={0.7}
-          disabled={true}
-        >
-          <View style={[styles.btnIconDot, { backgroundColor: colors.status.warning }]} />
-          <Text style={styles.btnText}>RECORD LOGS</Text>
-          <Text style={styles.disabledTag}>DISABLED (PHASE 4)</Text>
-        </TouchableOpacity>
+        {/* Recording Controls */}
+        <RecordingControls
+          isRecording={isRecording}
+          onToggleRecording={onToggleRecording}
+        />
 
-        {/* Debug Overlay Toggle Placeholder */}
-        <TouchableOpacity
-          style={[styles.controlBtn, styles.btnNeutral]}
-          activeOpacity={0.7}
-          disabled={true}
-        >
-          <View style={[styles.btnIconDot, { backgroundColor: colors.accent.cyan }]} />
-          <Text style={styles.btnText}>DEBUG OVERLAY</Text>
-          <Text style={styles.disabledTag}>DISABLED (PHASE 4)</Text>
-        </TouchableOpacity>
+        {/* Debug Overlay Toggle */}
+        <DebugOverlayToggle
+          isDebugVisible={isDebugVisible}
+          onToggleDebug={onToggleDebug}
+        />
       </View>
     </Card>
   );
 };
 
 const styles = StyleSheet.create({
-  standbyBadge: {
-    backgroundColor: 'rgba(100, 116, 139, 0.15)',
-    borderColor: 'rgba(100, 116, 139, 0.3)',
-    borderWidth: 1,
+  badge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: 6,
+    borderWidth: 1,
   },
-  standbyText: {
+  badgeStandby: {
+    backgroundColor: 'rgba(100, 116, 139, 0.15)',
+    borderColor: 'rgba(100, 116, 139, 0.3)',
+  },
+  badgeTextStandby: {
     color: colors.text.muted,
+  },
+  badgeOutage: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    borderColor: colors.status.error,
+  },
+  badgeTextOutage: {
+    color: colors.status.error,
+  },
+  badgeRecording: {
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    borderColor: colors.status.warning,
+  },
+  badgeTextRecording: {
+    color: colors.status.warning,
+  },
+  badgeText: {
     fontSize: typography.fontSizes.xs - 2,
     fontWeight: typography.fontWeights.bold,
   },
@@ -72,46 +118,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.xs,
-  },
-  controlBtn: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    borderRadius: 8,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnDanger: {
-    backgroundColor: 'rgba(239, 68, 68, 0.08)',
-    borderColor: 'rgba(239, 68, 68, 0.25)',
-  },
-  btnNeutral: {
-    backgroundColor: colors.background.surfaceSubtle,
-    borderColor: colors.background.surfaceBorder,
-  },
-  btnIconDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginBottom: 4,
-  },
-  btnDangerText: {
-    color: colors.status.error,
-    fontSize: typography.fontSizes.xs - 2,
-    fontWeight: typography.fontWeights.bold,
-    textAlign: 'center',
-  },
-  btnText: {
-    color: colors.text.secondary,
-    fontSize: typography.fontSizes.xs - 2,
-    fontWeight: typography.fontWeights.bold,
-    textAlign: 'center',
-  },
-  disabledTag: {
-    color: colors.text.muted,
-    fontSize: typography.fontSizes.xs - 4,
-    marginTop: 2,
-    textAlign: 'center',
   },
 });
