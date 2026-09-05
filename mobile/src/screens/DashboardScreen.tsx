@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
-import { mockDashboardData } from '../data/mockData';
+import { useNavigationData } from '../hooks/useNavigationData';
 
 // Navigation components
 import { NavigationMap } from '../components/navigation/NavigationMap';
@@ -42,8 +42,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
   const [isRecordingLogs, setIsRecordingLogs] = useState<boolean>(false);
   const [isDebugVisible, setIsDebugVisible] = useState<boolean>(true);
 
-  // Ingest baseline mock data
-  const data = mockDashboardData;
+  // Ingest navigation data via frontend data access hook (Phase 9 boundary)
+  const data = useNavigationData();
 
   // Local simulated telemetry derivation based on outage toggle
   const navigationState = isOutageSimulated
