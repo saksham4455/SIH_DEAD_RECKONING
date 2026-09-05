@@ -1,0 +1,14 @@
+﻿{
+  "region": "Delhi_NCR_Demo",
+  "roadSegments": [
+    {
+      "id": "segment_101",
+      "name": "Connaught Outer Circle",
+      "speedLimitKmh": 50,
+      "coordinates": [
+        [28.6139, 77.2090],
+        [28.6145, 77.2098]
+      ]
+    }
+  ]
+}

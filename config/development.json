@@ -1,0 +1,8 @@
+﻿{
+  "environment": "development",
+  "problemStatement": "SIH26168",
+  "imuSamplingRateHz": 100,
+  "gnssSamplingRateHz": 1,
+  "defaultFusionMode": "GNSS_LOCKED",
+  "enableAiOdometry": true
+}

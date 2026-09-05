@@ -1,0 +1,6 @@
+﻿allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}

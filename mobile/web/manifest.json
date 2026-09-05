@@ -1,0 +1,9 @@
+﻿{
+    "name": "SIH 2026 Dead Reckoning Navigation",
+    "short_name": "DeadReckoning",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0B0F19",
+    "theme_color": "#00E5FF",
+    "description": "Tactical Vehicle Dead Reckoning System using Multi-GNSS and Edge AI"
+}
