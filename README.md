@@ -1,944 +1,281 @@
-```text
-SIH26168 — INTELLIGENT DEAD RECKONING SYSTEM
-│
-├── project-root/
-│   │
-│   ├── README.md
-│   ├── LICENSE
-│   ├── .gitignore
-│   ├── .env.example
-│   ├── pubspec.yaml
-│   ├── analysis_options.yaml
-│   ├── CMakeLists.txt
-│   ├── Makefile
-│   ├── docker-compose.yml
-│   │
-│   ├── .github/
-│   │   └── workflows/
-│   │       ├── flutter_ci.yml
-│   │       ├── cpp_ci.yml
-│   │       ├── ml_ci.yml
-│   │       ├── integration_tests.yml
-│   │       └── release.yml
-│   │
-│   │
-│   ├── mobile/
-│   │   │
-│   │   ├── pubspec.yaml
-│   │   │
-│   │   ├── assets/
-│   │   │   ├── icons/
-│   │   │   ├── images/
-│   │   │   ├── maps/
-│   │   │   ├── models/
-│   │   │   │   ├── speed_estimator.tflite
-│   │   │   │   ├── motion_classifier.tflite
-│   │   │   │   ├── vibration_filter.tflite
-│   │   │   │   └── drift_estimator.tflite
-│   │   │   └── configurations/
-│   │   │       ├── sensor_config.json
-│   │   │       ├── fusion_config.json
-│   │   │       └── map_matching_config.json
-│   │   │
-│   │   ├── lib/
-│   │   │   │
-│   │   │   ├── main.dart
-│   │   │   │
-│   │   │   ├── app/
-│   │   │   │   ├── app.dart
-│   │   │   │   ├── app_config.dart
-│   │   │   │   ├── app_constants.dart
-│   │   │   │   └── app_lifecycle.dart
-│   │   │   │
-│   │   │   ├── routing/
-│   │   │   │   ├── app_router.dart
-│   │   │   │   └── route_names.dart
-│   │   │   │
-│   │   │   ├── screens/
-│   │   │   │   │
-│   │   │   │   ├── onboarding/
-│   │   │   │   │   ├── onboarding_screen.dart
-│   │   │   │   │   └── permissions_screen.dart
-│   │   │   │   │
-│   │   │   │   ├── device_setup/
-│   │   │   │   │   ├── device_setup_screen.dart
-│   │   │   │   │   ├── sensor_check_screen.dart
-│   │   │   │   │   └── device_capability_screen.dart
-│   │   │   │   │
-│   │   │   │   ├── calibration/
-│   │   │   │   │   ├── calibration_screen.dart
-│   │   │   │   │   ├── alignment_screen.dart
-│   │   │   │   │   ├── calibration_progress.dart
-│   │   │   │   │   └── calibration_result.dart
-│   │   │   │   │
-│   │   │   │   ├── navigation/
-│   │   │   │   │   ├── navigation_screen.dart
-│   │   │   │   │   ├── map_screen.dart
-│   │   │   │   │   ├── position_overlay.dart
-│   │   │   │   │   └── navigation_status.dart
-│   │   │   │   │
-│   │   │   │   ├── gnss/
-│   │   │   │   │   ├── gnss_status_screen.dart
-│   │   │   │   │   ├── satellite_view.dart
-│   │   │   │   │   └── signal_quality_view.dart
-│   │   │   │   │
-│   │   │   │   ├── dead_reckoning/
-│   │   │   │   │   ├── dr_status_screen.dart
-│   │   │   │   │   ├── drift_view.dart
-│   │   │   │   │   └── confidence_view.dart
-│   │   │   │   │
-│   │   │   │   ├── diagnostics/
-│   │   │   │   │   ├── diagnostics_screen.dart
-│   │   │   │   │   ├── sensor_diagnostics.dart
-│   │   │   │   │   ├── fusion_diagnostics.dart
-│   │   │   │   │   └── performance_diagnostics.dart
-│   │   │   │   │
-│   │   │   │   ├── sessions/
-│   │   │   │   │   ├── session_list_screen.dart
-│   │   │   │   │   ├── session_detail_screen.dart
-│   │   │   │   │   └── replay_screen.dart
-│   │   │   │   │
-│   │   │   │   └── settings/
-│   │   │   │       ├── settings_screen.dart
-│   │   │   │       ├── sensor_settings.dart
-│   │   │   │       ├── navigation_settings.dart
-│   │   │   │       └── model_settings.dart
-│   │   │   │
-│   │   │   ├── widgets/
-│   │   │   │   ├── common/
-│   │   │   │   ├── navigation/
-│   │   │   │   ├── calibration/
-│   │   │   ├── gnss/
-│   │   │   ├── dead_reckoning/
-│   │   │   ├── ai/
-│   │   │   ├── outage/
-│   │   │   ├── diagnostics/
-│   │   │   └── charts/
-│   │   │
-│   │   ├── features/
-│   │   │   │
-│   │   │   ├── sensor_acquisition/
-│   │   │   │   ├── accelerometer_service.dart
-│   │   │   │   ├── gyroscope_service.dart
-│   │   │   │   ├── magnetometer_service.dart
-│   │   │   │   ├── barometer_service.dart
-│   │   │   │   ├── device_motion_service.dart
-│   │   │   │   └── sensor_stream_manager.dart
-│   │   │   │
-│   │   │   ├── gnss/
-│   │   │   │   ├── gnss_service.dart
-│   │   │   │   ├── location_stream.dart
-│   │   │   │   ├── gnss_quality.dart
-│   │   │   │   ├── satellite_state.dart
-│   │   │   │   └── gnss_outage_detector.dart
-│   │   │   │
-│   │   │   ├── alignment/
-│   │   │   │   ├── phone_orientation.dart
-│   │   │   ├── vehicle_heading.dart
-│   │   │   ├── placement_detection.dart
-│   │   │   ├── pitch_roll_estimator.dart
-│   │   │   └── yaw_alignment.dart
-│   │   │
-│   │   ├── navigation/
-│   │   │   ├── navigation_controller.dart
-│   │   │   ├── position_stream.dart
-│   │   │   ├── heading_stream.dart
-│   │   │   └── navigation_state.dart
-│   │   │
-│   │   ├── ai/
-│   │   │   ├── tflite_runtime.dart
-│   │   │   ├── speed_estimator.dart
-│   │   │   ├── acceleration_estimator.dart
-│   │   │   ├── vibration_classifier.dart
-│   │   │   ├── motion_classifier.dart
-│   │   │   └── drift_predictor.dart
-│   │   │
-│   │   ├── dead_reckoning/
-│   │   │   ├── dr_controller.dart
-│   │   │   ├── dr_state.dart
-│   │   │   ├── dr_position.dart
-│   │   │   └── drift_monitor.dart
-│   │   │
-│   │   ├── fusion/
-│   │   │   ├── fusion_controller.dart
-│   │   │   ├── fusion_state.dart
-│   │   │   └── adaptive_weighting.dart
-│   │   │
-│   │   └── map_matching/
-│   │       ├── map_match_controller.dart
-│   │       ├── road_candidate.dart
-│   │       ├── road_constraint.dart
-│   │       └── lane_candidate.dart
-│   │
-│   │
-│   ├── flutter_core/
-│   │   │
-│   │   ├── data/
-│   │   │   ├── sensor_frame.dart
-│   │   │   ├── gnss_frame.dart
-│   │   │   ├── fused_frame.dart
-│   │   │   ├── navigation_state.dart
-│   │   │   └── outage_event.dart
-│   │   │
-│   │   ├── acquisition/
-│   │   │   ├── sensor_stream_manager.dart
-│   │   │   ├── gnss_stream_manager.dart
-│   │   │   ├── timestamp_manager.dart
-│   │   │   ├── sampling_manager.dart
-│   │   │   └── sensor_health_manager.dart
-│   │   │
-│   │   ├── preprocessing/
-│   │   │   ├── normalization.dart
-│   │   │   ├── filtering.dart
-│   │   │   ├── outlier_removal.dart
-│   │   │   └── synchronization.dart
-│   │   │
-│   │   ├── local_storage/
-│   │   │   ├── database.dart
-│   │   │   ├── session_repository.dart
-│   │   │   ├── sensor_repository.dart
-│   │   │   └── model_repository.dart
-│   │   │
-│   │   └── communication/
-│   │       ├── cpp_ffi_bridge.dart
-│   │       ├── native_buffer.dart
-│   │       ├── sensor_buffer.dart
-│   │       └── result_decoder.dart
-│   │
-│   │
-│   ├── cpp-core/
-│   │   │
-│   │   ├── CMakeLists.txt
-│   │   │
-│   │   ├── include/
-│   │   │   ├── sensors/
-│   │   │   │   ├── sensor_frame.hpp
-│   │   │   │   ├── imu_data.hpp
-│   │   │   │   ├── gnss_data.hpp
-│   │   │   │   └── sensor_state.hpp
-│   │   │   │
-│   │   │   ├── preprocessing/
-│   │   │   │   ├── low_pass_filter.hpp
-│   │   │   │   ├── high_pass_filter.hpp
-│   │   │   │   ├── butterworth.hpp
-│   │   │   │   ├── kalman_filter.hpp
-│   │   │   │   └── outlier_detector.hpp
-│   │   │   │
-│   │   │   ├── alignment/
-│   │   │   │   ├── vehicle_frame.hpp
-│   │   │   │   ├── phone_frame.hpp
-│   │   │   │   ├── orientation_estimator.hpp
-│   │   │   │   ├── rotation_matrix.hpp
-│   │   │   │   └── alignment_engine.hpp
-│   │   │   │
-│   │   │   ├── navigation/
-│   │   │   │   ├── imu_integrator.hpp
-│   │   │   │   ├── inertial_navigation.hpp
-│   │   │   │   ├── dead_reckoning.hpp
-│   │   │   │   ├── heading_estimator.hpp
-│   │   │   │   └── position_estimator.hpp
-│   │   │   │
-│   │   │   ├── fusion/
-│   │   │   │   ├── ekf.hpp
-│   │   │   │   ├── ukf.hpp
-│   │   │   │   ├── state_vector.hpp
-│   │   │   │   ├── covariance.hpp
-│   │   │   │   ├── measurement_model.hpp
-│   │   │   │   └── adaptive_fusion.hpp
-│   │   │   │
-│   │   │   ├── gnss/
-│   │   │   │   ├── gnss_processor.hpp
-│   │   │   │   ├── position_quality.hpp
-│   │   │   │   ├── velocity_processor.hpp
-│   │   │   │   ├── heading_processor.hpp
-│   │   │   │   ├── outage_detector.hpp
-│   │   │   │   └── recovery_detector.hpp
-│   │   │   │
-│   │   │   ├── map_matching/
-│   │   │   │   ├── road_graph.hpp
-│   │   │   │   ├── road_segment.hpp
-│   │   │   │   ├── candidate_generator.hpp
-│   │   │   │   ├── hmm_matcher.hpp
-│   │   │   │   ├── map_matcher.hpp
-│   │   │   │   └── lane_matcher.hpp
-│   │   │   │
-│   │   │   ├── kinematics/
-│   │   │   │   ├── vehicle_model.hpp
-│   │   │   │   ├── speed_constraint.hpp
-│   │   │   │   ├── acceleration_constraint.hpp
-│   │   │   │   ├── turn_constraint.hpp
-│   │   │   │   ├── lane_constraint.hpp
-│   │   │   │   └── motion_constraint_engine.hpp
-│   │   │   │
-│   │   │   ├── signal_processing/
-│   │   │   │   ├── vibration_filter.hpp
-│   │   │   │   ├── engine_idle_detector.hpp
-│   │   │   │   ├── pothole_detector.hpp
-│   │   │   │   ├── road_noise_detector.hpp
-│   │   │   │   ├── phone_motion_detector.hpp
-│   │   │   │   └── adaptive_filter.hpp
-│   │   │   │
-│   │   │   ├── uncertainty/
-│   │   │   │   ├── covariance_estimator.hpp
-│   │   │   │   ├── drift_estimator.hpp
-│   │   │   │   ├── confidence_engine.hpp
-│   │   │   │   └── integrity_monitor.hpp
-│   │   │   │
-│   │   │   └── engine/
-│   │   │       ├── idr_engine.hpp
-│   │   │       ├── processing_pipeline.hpp
-│   │   │       ├── state_manager.hpp
-│   │   │       └── real_time_scheduler.hpp
-│   │   │
-│   │   ├── src/
-│   │   │   ├── sensors/
-│   │   │   ├── preprocessing/
-│   │   │   ├── alignment/
-│   │   │   ├── navigation/
-│   │   │   ├── fusion/
-│   │   │   ├── gnss/
-│   │   │   ├── map_matching/
-│   │   │   ├── kinematics/
-│   │   │   ├── signal_processing/
-│   │   │   ├── uncertainty/
-│   │   │   └── engine/
-│   │   │
-│   │   ├── ffi/
-│   │   │   ├── idr_api.cpp
-│   │   │   ├── sensor_api.cpp
-│   │   │   ├── navigation_api.cpp
-│   │   │   ├── fusion_api.cpp
-│   │   │   ├── calibration_api.cpp
-│   │   │   └── result_api.cpp
-│   │   │
-│   │   └── tests/
-│   │       ├── alignment_tests.cpp
-│   │       ├── fusion_tests.cpp
-│   │       ├── dr_tests.cpp
-│   │       ├── map_matching_tests.cpp
-│   │       ├── kinematic_tests.cpp
-│   │       └── signal_processing_tests.cpp
-│   │
-│   │
-│   ├── ml/
-│   │   │
-│   │   ├── data/
-│   │   │   ├── raw/
-│   │   │   ├── synchronized/
-│   │   │   ├── processed/
-│   │   │   ├── labeled/
-│   │   │   └── synthetic/
-│   │   │
-│   │   ├── preprocessing/
-│   │   │   ├── synchronize.py
-│   │   │   ├── clean.py
-│   │   │   ├── normalize.py
-│   │   │   └── feature_engineering.py
-│   │   │
-│   │   ├── augmentation/
-│   │   │   ├── sensor_noise.py
-│   │   │   ├── vibration.py
-│   │   │   ├── pothole.py
-│   │   │   ├── phone_movement.py
-│   │   │   ├── orientation_variation.py
-│   │   │   └── gnss_outage.py
-│   │   │
-│   │   ├── models/
-│   │   │   ├── speed_estimation/
-│   │   │   │   ├── network.py
-│   │   │   │   ├── dataset.py
-│   │   │   │   └── train.py
-│   │   │   │
-│   │   │   ├── acceleration_estimation/
-│   │   │   ├── vibration_filter/
-│   │   │   ├── motion_classification/
-│   │   │   ├── drift_prediction/
-│   │   │   └── sensor_quality/
-│   │   │
-│   │   ├── training/
-│   │   │   ├── train.py
-│   │   │   ├── validate.py
-│   │   │   ├── hyperparameter_search.py
-│   │   │   └── experiment_tracking.py
-│   │   │
-│   │   ├── calibration/
-│   │   │   ├── model_calibration.py
-│   │   │   ├── quantization.py
-│   │   │   └── pruning.py
-│   │   │
-│   │   ├── evaluation/
-│   │   │   ├── speed_error.py
-│   │   │   ├── acceleration_error.py
-│   │   │   ├── drift_error.py
-│   │   │   ├── outage_accuracy.py
-│   │   │   └── lane_accuracy.py
-│   │   │
-│   │   ├── export/
-│   │   │   ├── export_tflite.py
-│   │   │   ├── quantize_tflite.py
-│   │   │   └── validate_mobile_model.py
-│   │   │
-│   │   └── replay/
-│   │       ├── sensor_replay.py
-│   │       ├── gnss_outage_replay.py
-│   │       └── trajectory_replay.py
-│   │
-│   │
-│   ├── edge-engine/
-│   │   │
-│   │   ├── sensor-ingestion/
-│   │   │   ├── accelerometer/
-│   │   │   ├── gyroscope/
-│   │   │   ├── magnetometer/
-│   │   │   ├── barometer/
-│   │   │   └── gnss/
-│   │   │
-│   │   ├── timestamp-synchronization/
-│   │   │   ├── clock-alignment/
-│   │   │   ├── sensor-timestamps/
-│   │   │   └── interpolation/
-│   │   │
-│   │   ├── sensor-preprocessing/
-│   │   │   ├── calibration/
-│   │   │   ├── filtering/
-│   │   │   ├── bias-estimation/
-│   │   │   └── outlier-rejection/
-│   │   │
-│   │   ├── in-vehicle-alignment/
-│   │   │   ├── phone-orientation/
-│   │   │   ├── vehicle-frame/
-│   │   │   ├── pitch-estimation/
-│   │   │   ├── roll-estimation/
-│   │   │   ├── yaw-estimation/
-│   │   │   ├── heading-alignment/
-│   │   │   └── placement-invariance/
-│   │   │
-│   │   ├── ai-speed-vibration/
-│   │   │   ├── speed-estimation/
-│   │   │   ├── acceleration-estimation/
-│   │   │   ├── engine-idle-detection/
-│   │   │   ├── pothole-detection/
-│   │   │   ├── road-noise-filter/
-│   │   │   ├── phone-motion-filter/
-│   │   │   └── motion-classification/
-│   │   │
-│   │   ├── gnss-processing/
-│   │   │   ├── position/
-│   │   │   ├── velocity/
-│   │   │   ├── heading/
-│   │   │   ├── accuracy/
-│   │   │   ├── signal-quality/
-│   │   │   └── validity/
-│   │   │
-│   │   ├── inertial-navigation/
-│   │   │   ├── imu-integration/
-│   │   │   ├── attitude/
-│   │   │   ├── velocity/
-│   │   │   ├── position/
-│   │   │   └── drift/
-│   │   │
-│   │   ├── intelligent-dead-reckoning/
-│   │   │   ├── position-propagation/
-│   │   │   ├── heading-propagation/
-│   │   │   ├── speed-propagation/
-│   │   │   ├── acceleration-propagation/
-│   │   │   └── uncertainty-propagation/
-│   │   │
-│   │   ├── gnss-ins-fusion/
-│   │   │   ├── state-estimation/
-│   │   │   ├── ukf/
-│   │   │   ├── adaptive-weighting/
-│   │   │   ├── measurement-update/
-│   │   │   ├── prediction-update/
-│   │   │   └── covariance-management/
-│   │   │
-│   │   ├── gnss-deficit-handler/
-│   │   │   ├── gnss-quality-monitor/
-│   │   │   ├── outage-detection/
-│   │   │   ├── transition-manager/
-│   │   │   ├── pure-dr-mode/
-│   │   │   ├── recovery-detection/
-│   │   │   ├── re-alignment/
-│   │   │   └── smooth-state-correction/
-│   │   │
-│   │   ├── map-matching/
-│   │   │   ├── road-network/
-│   │   │   ├── candidate-generation/
-│   │   │   ├── hmm/
-│   │   │   ├── geometric-matching/
-│   │   │   ├── trajectory-matching/
-│   │   │   └── lane-matching/
-│   │   │
-│   │   ├── kinematic-constraints/
-│   │   │   ├── speed/
-│   │   │   ├── acceleration/
-│   │   │   ├── braking/
-│   │   │   ├── turning/
-│   │   │   ├── lane/
-│   │   │   └── vehicle-motion/
-│   │   │
-│   │   ├── lane-level-positioning/
-│   │   │   ├── lane-candidate/
-│   │   │   ├── lane-probability/
-│   │   │   ├── lane-transition/
-│   │   │   └── lane-confidence/
-│   │   │
-│   │   ├── confidence-engine/
-│   │   │   ├── position-confidence/
-│   │   │   ├── heading-confidence/
-│   │   │   ├── speed-confidence/
-│   │   │   ├── drift-confidence/
-│   │   │   └── integrity-monitor/
-│   │   │
-│   │   ├── model-runtime/
-│   │   │   ├── tflite/
-│   │   │   ├── model-loader/
-│   │   │   ├── inference-manager/
-│   │   │   └── model-versioning/
-│   │   │
-│   │   └── offline-navigation/
-│   │       ├── local-map/
-│   │       ├── offline-routing/
-│   │       ├── offline-map-matching/
-│   │       └── offline-session/
-│   │
-│   │
-│   ├── maps/
-│   │   ├── road-network/
-│   │   ├── road-segments/
-│   │   ├── lane-network/
-│   │   ├── map-tiles/
-│   │   ├── offline-maps/
-│   │   └── map-matching-data/
-│   │
-│   │
-│   ├── simulation/
-│   │   │
-│   │   ├── scenarios/
-│   │   │   ├── open-road/
-│   │   │   ├── tunnel/
-│   │   │   ├── underpass/
-│   │   │   ├── multi-level-parking/
-│   │   │   ├── dense-urban-canyon/
-│   │   │   ├── forest/
-│   │   │   └── highway/
-│   │   │
-│   │   ├── gnss-outage/
-│   │   │   ├── complete-outage/
-│   │   │   ├── intermittent-outage/
-│   │   │   ├── degraded-signal/
-│   │   │   └── recovery/
-│   │   │
-│   │   ├── sensor-noise/
-│   │   │   ├── accelerometer-noise/
-│   │   │   ├── gyro-noise/
-│   │   │   ├── magnetometer-noise/
-│   │   │   ├── vibration/
-│   │   │   └── phone-motion/
-│   │   │
-│   │   ├── phone-placement/
-│   │   │   ├── dashboard/
-│   │   │   ├── windshield/
-│   │   │   ├── holder/
-│   │   │   ├── pocket/
-│   │   │   └── arbitrary-orientation/
-│   │   │
-│   │   └── benchmarks/
-│   │       ├── position-error/
-│   │       ├── drift-rate/
-│   │       ├── speed-error/
-│   │       ├── heading-error/
-│   │       ├── lane-accuracy/
-│   │       └── recovery-time/
-│   │
-│   │
-│   ├── backend/
-│   │   │
-│   │   ├── README.md
-│   │   │
-│   │   ├── app/
-│   │   │   ├── main.py
-│   │   │   │
-│   │   │   ├── core/
-│   │   │   │   ├── config.py
-│   │   │   │   ├── security.py
-│   │   │   │   ├── logging.py
-│   │   │   │   └── dependencies.py
-│   │   │   │
-│   │   │   ├── api/
-│   │   │   │   └── v1/
-│   │   │   │       ├── sessions.py
-│   │   │   │       ├── devices.py
-│   │   │   │       ├── models.py
-│   │   │   │       ├── telemetry.py
-│   │   │   │       ├── maps.py
-│   │   │   │       └── diagnostics.py
-│   │   │   │
-│   │   │   ├── services/
-│   │   │   │   ├── session_service.py
-│   │   │   │   ├── telemetry_service.py
-│   │   │   │   ├── model_service.py
-│   │   │   │   ├── map_service.py
-│   │   │   │   └── analytics_service.py
-│   │   │   │
-│   │   │   ├── workers/
-│   │   │   │   ├── telemetry_worker.py
-│   │   │   ├── analytics_worker.py
-│   │   │   └── model_worker.py
-│   │   │
-│   │   └── tests/
-│   │
-│   │
-│   ├── database/
-│   │   │
-│   │   ├── migrations/
-│   │   ├── schema/
-│   │   ├── indexes/
-│   │   │
-│   │   ├── tables/
-│   │   │   ├── users
-│   │   │   ├── devices
-│   │   │   ├── sessions
-│   │   │   ├── sensor_frames
-│   │   │   ├── gnss_frames
-│   │   │   ├── fused_frames
-│   │   │   ├── outage_events
-│   │   │   ├── calibration_profiles
-│   │   │   ├── model_versions
-│   │   │   ├── road_regions
-│   │   │   ├── road_segments
-│   │   │   └── anomaly_events
-│   │   │
-│   │   └── spatial/
-│   │       ├── postgis/
-│   │       ├── road_geometry/
-│   │       └── lane_geometry/
-│   │
-│   │
-│   ├── telemetry/
-│   │   ├── session-recorder/
-│   │   ├── sensor-logs/
-│   │   ├── gnss-logs/
-│   │   ├── fusion-logs/
-│   │   ├── outage-logs/
-│   │   ├── performance-logs/
-│   │   └── crash-reports/
-│   │
-│   │
-│   ├── tests/
-│   │   │
-│   │   ├── flutter/
-│   │   │   ├── widget/
-│   │   │   ├── unit/
-│   │   │   └── integration/
-│   │   │
-│   │   ├── cpp/
-│   │   │   ├── unit/
-│   │   │   ├── integration/
-│   │   │   └── stress/
-│   │   │
-│   │   ├── ai/
-│   │   │   ├── inference/
-│   │   │   ├── robustness/
-│   │   │   └── accuracy/
-│   │   │
-│   │   ├── system/
-│   │   │   ├── sensor-to-position/
-│   │   │   ├── gnss-to-dr/
-│   │   │   ├── dr-to-gnss/
-│   │   │   └── end-to-end/
-│   │   │
-│   │   └── field/
-│   │       ├── tunnel/
-│   │       ├── parking/
-│   │       ├── forest/
-│   │       ├── urban/
-│   │       └── highway/
-│   │
-│   │
-│   ├── infra/
-│   │   ├── docker/
-│   │   │   ├── backend.Dockerfile
-│   │   │   ├── ml.Dockerfile
-│   │   │   └── database.Dockerfile
-│   │   │
-│   │   ├── kubernetes/
-│   │   │   ├── backend/
-│   │   │   ├── workers/
-│   │   │   ├── database/
-│   │   │   └── monitoring/
-│   │   │
-│   │   ├── redis/
-│   │   ├── object-storage/
-│   │   ├── monitoring/
-│   │   │   ├── prometheus/
-│   │   │   ├── grafana/
-│   │   │   └── opentelemetry/
-│   │   └── terraform/
-│   │
-│   │
-│   ├── docs/
-│   │   │
-│   │   ├── architecture/
-│   │   │   ├── system-architecture.md
-│   │   │   ├── flutter-architecture.md
-│   │   │   ├── cpp-core-architecture.md
-│   │   │   ├── data-flow.md
-│   │   │   ├── fusion-flow.md
-│   │   │   └── outage-flow.md
-│   │   │
-│   │   ├── algorithms/
-│   │   │   ├── inertial-navigation.md
-│   │   │   ├── ukf.md
-│   │   │   ├── map-matching.md
-│   │   │   ├── kinematic-constraints.md
-│   │   │   └── dead-reckoning.md
-│   │   │
-│   │   ├── ai/
-│   │   │   ├── speed-estimation.md
-│   │   │   ├── vibration-filtering.md
-│   │   │   ├── motion-classification.md
-│   │   │   └── model-deployment.md
-│   │   │
-│   │   ├── testing/
-│   │   │   ├── test-plan.md
-│   │   │   ├── benchmark-protocol.md
-│   │   │   └── field-test-plan.md
-│   │   │
-│   │   └── deployment/
-│   │       ├── build.md
-│   │       ├── release.md
-│   │       └── model-update.md
-│   │
-│   │
-│   └── scripts/
-│       ├── setup.sh
-│       ├── build_cpp.sh
-│       ├── build_flutter.sh
-│       ├── train_models.sh
-│       ├── export_models.sh
-│       ├── run_simulation.sh
-│       └── run_benchmarks.sh
-│
-│
-└── REAL-TIME EDGE PIPELINE
-    │
-    ├── Smartphone Sensors
-    │   ├── Accelerometer
-    │   ├── Gyroscope
-    │   ├── Magnetometer
-    │   └── GNSS
-    │
-    ▼
-    Flutter Sensor Acquisition
-    │
-    ├── Sensor Streams
-    ├── GNSS Stream
-    ├── Timestamping
-    └── Data Buffering
-    │
-    ▼
-    Sensor Synchronization
-    │
-    ▼
-    Sensor Preprocessing
-    │
-    ├── Noise Filtering
-    ├── Bias Estimation
-    ├── Outlier Rejection
-    └── Signal Normalization
-    │
-    ▼
-    In-Vehicle Alignment
-    │
-    ├── Phone Orientation
-    ├── Vehicle Coordinate Frame
-    ├── Pitch
-    ├── Roll
-    └── Yaw
-    │
-    ▼
-    AI Motion Processing
-    │
-    ├── Speed Estimation
-    ├── Acceleration Estimation
-    ├── Engine Vibration Detection
-    ├── Pothole Detection
-    ├── Road Noise Filtering
-    └── Phone Movement Detection
-    │
-    ▼
-    GNSS + IMU Processing
-    │
-    ├── GNSS Position
-    ├── GNSS Velocity
-    ├── GNSS Quality
-    ├── IMU Integration
-    └── INS State
-    │
-    ▼
-    Intelligent Fusion Engine
-    │
-    ├── UKF
-    ├── Adaptive Measurement Weighting
-    ├── State Prediction
-    └── State Correction
-    │
-    ▼
-    GNSS Deficit Handler
-    │
-    ├── GNSS Healthy
-    │       └── GNSS + INS Mode
-    │
-    ├── GNSS Degraded
-    │       └── Adaptive Fusion
-    │
-    ├── GNSS Lost
-    │       └── Intelligent Dead Reckoning
-    │
-    └── GNSS Recovered
-            └── Smooth Re-Aiding
-    │
-    ▼
-    Map Matching
-    │
-    ├── Road Candidate Generation
-    ├── HMM Matching
-    ├── Geometric Matching
-    └── Lane Matching
-    │
-    ▼
-    Kinematic Constraints
-    │
-    ├── Vehicle Speed
-    ├── Acceleration
-    ├── Turning
-    ├── Lane
-    └── Vehicle Motion
-    │
-    ▼
-    Position + Heading + Speed
-    │
-    ▼
-    Confidence / Integrity Engine
-    │
-    ├── Position Confidence
-    ├── Drift Estimate
-    ├── Heading Confidence
-    └── Lane Confidence
-    │
-    ▼
-    Flutter Navigation Interface
-    │
-    ├── Vehicle Position
-    ├── Route
-    ├── GNSS Status
-    ├── DR Status
-    ├── Accuracy
-    └── Confidence
-```
+# SIH26168: AI-ML Based Intelligent Dead Reckoning System
 
-### TECHNOLOGY BOUNDARY
+Cross-platform vehicle-navigation research software combining Flutter, a C++ navigation core, AI/ML pipelines, map processing, backend telemetry, and GNSS-outage simulation.
+
+The repository currently contains the project architecture, working scaffolds, a Flutter demo UI, baseline native interfaces, and development tooling. Field datasets, trained models, generated map binaries, and production native packaging are not included yet.
+
+## Repository Structure
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                       FLUTTER / DART                        │
-│                                                             │
-│  UI • Sensor Acquisition • GNSS • State • Storage • Maps   │
-│  TFLite Inference • Session Management • Visualization     │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-                       DART FFI
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                         C++ CORE                            │
-│                                                             │
-│  Sensor Processing • INS • UKF • Fusion • DR              │
-│  Alignment • Map Matching • Kinematics • Uncertainty      │
-│  Real-Time Navigation Pipeline                             │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                       AI MODELS                             │
-│                                                             │
-│  TensorFlow Lite • Speed • Acceleration • Vibration        │
-│  Motion Classification • Drift / Sensor Quality            │
-└─────────────────────────────────────────────────────────────┘
-
-
-                    SUPPORT PLANE
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                       BACKEND                               │
-│                                                             │
-│  Sessions • Telemetry • Model Registry • Analytics         │
-│  Map Data • User/Device Data • Experiment Data             │
-│                                                             │
-│       NOTE: NOT PART OF REAL-TIME POSITIONING LOOP         │
-└─────────────────────────────────────────────────────────────┘
+SIH_DEAD_RECKONING/
+├── frontend/                 # Flutter Android, iOS, and Web application
+├── backend/                  # FastAPI telemetry and judge-dashboard API
+├── cpp-core/                 # C++17 navigation engine and C FFI API
+├── ml/                       # Dataset, training, evaluation, and export pipeline
+├── simulation/               # GNSS outage, replay, and trajectory evaluation
+├── maps/                     # OSM processing tools and graph artifacts
+├── datasets/                 # Field-test logs and benchmark data locations
+├── config/                   # Repository configuration
+├── docs/                     # Integration documentation
+├── scripts/                  # Build and workflow scripts
+├── docker-compose.yml        # Backend, PostGIS, and Redis services
+├── Makefile                  # Common development commands
+├── .gitignore                # Generated-file exclusions
+└── .gitattributes            # Git LFS rules for large artifacts
 ```
 
-### PLATFORM RULE
+## Current Status
+
+| Area | Current state |
+| --- | --- |
+| Flutter frontend | Runs as a demo telemetry/navigation UI; mobile IMU adapter uses `sensors_plus`. |
+| C++ core | C++17 shared-library scaffold with module headers, baseline implementations, and exported FFI API. |
+| Backend | FastAPI routes, WebSocket manager, schemas, SQLAlchemy models, and local in-memory telemetry runtime. |
+| ML | Architecture-level Python modules and model/export boundaries; training and conversion are pending. |
+| Simulation | Scenario files and outage/replay/evaluation boundaries; field-log integration is pending. |
+| Maps | Demo road data and processing boundaries; raw PBF and binary spatial index are pending. |
+
+## Architecture
 
 ```text
-THIS PROJECT DOES NOT CONTAIN:
-
-❌ Kotlin
-❌ Android Studio
-❌ Android-native application layer
-❌ Kotlin Platform Channels
-❌ Java Android business logic
-
-THIS PROJECT USES:
-
-✅ Flutter
-✅ Dart
-✅ Flutter sensor/GNSS plugins
-✅ Dart FFI
-✅ C++
-✅ TensorFlow Lite
-✅ Python for ML training
-✅ Local/offline processing
+Flutter sensors and GNSS
+        |
+        v
+frontend/lib/features/data_acquisition
+        |
+        +--> frontend/lib/features/ai_motion
+        |
+        v
+frontend/lib/core/platform/ffi <--> cpp-core/include/ffi
+                                      |
+                                      v
+                         INS, UKF, outage handling,
+                         kinematics, and map matching
+                                      |
+                                      v
+frontend/lib/features/navigation_engine
+        |
+        +--> frontend/lib/features/navigation_ui
+        |
+        +--> backend/app/api/v1/telemetry
+        |
+        +--> backend/app/api/websockets/live_dashboard
 ```
 
-### CORE DESIGN PRINCIPLE
+## Frontend
+
+The Flutter project is limited to the requested Android, iOS, and Web targets:
 
 ```text
-                    GNSS AVAILABLE
-                          │
-                          ▼
-                 GNSS + INS FUSION
-                          │
-                          ▼
-                    BEST POSITION
-                          │
-                    GNSS LOST
-                          ▼
-             ┌──────────────────────┐
-             │ Intelligent DR Mode  │
-             │                      │
-             │ IMU + AI Speed       │
-             │ + AI Acceleration    │
-             │ + UKF                │
-             │ + Map Matching       │
-             │ + Kinematic Model    │
-             └──────────┬───────────┘
-                        │
-                        ▼
-                 CONTINUE POSITION
-                        │
-                  GNSS RETURNS
-                        ▼
-             ┌──────────────────────┐
-             │ Smooth Re-Aiding     │
-             │                      │
-             │ DR State             │
-             │      +               │
-             │ New GNSS Measurement │
-             │      ↓               │
-             │ Corrected State      │
-             └──────────────────────┘
+frontend/
+├── android/                         # Gradle and Android permissions
+├── ios/                             # Info.plist and iOS configuration
+├── web/                             # Flutter Web target
+├── assets/
+│   ├── config/                      # Navigation configuration
+│   ├── maps/                        # Demo map assets
+│   ├── icons/                       # Navigation icon assets
+│   └── models/                      # TFLite model location
+├── pubspec.yaml
+└── lib/
+    ├── main.dart
+    ├── app_widget.dart
+    ├── core/
+    │   ├── constants/
+    │   ├── router/
+    │   ├── theme/
+    │   ├── errors/
+    │   ├── utils/
+    │   ├── di/
+    │   ├── storage/
+    │   └── platform/
+    │       ├── ffi/
+    │       └── hardware/
+    └── features/
+        ├── data_acquisition/
+        ├── ai_motion/
+        ├── navigation_engine/
+        └── navigation_ui/
 ```
+
+The UI currently reads from `DemoNavigationRepository`. The FFI and TFLite layers expose integration boundaries, but native library loading and real model inference are not fully connected. The model and vehicle-marker directories currently contain placeholders rather than trained binaries.
+
+## C++ Core
+
+```text
+cpp-core/
+├── CMakeLists.txt                 # C++17, shared library, Eigen3, Threads, PIC
+├── include/
+│   ├── common/                    # Types, math, timestamps
+│   ├── sensor/                    # IMU/GNSS packets and ring buffer
+│   ├── alignment/                 # Device-to-vehicle alignment
+│   ├── ins/                       # Strapdown INS and earth model
+│   ├── fusion/                    # UKF interfaces
+│   ├── deficit/                   # GNSS outage state machine and DR
+│   ├── map_matching/              # Road graph and HMM matcher
+│   └── ffi/                       # IDR C ABI
+└── src/                           # Matching C++ implementation files
+```
+
+The exported API is `IDR_Init`, `IDR_PushIMU`, `IDR_PushGNSS`, `IDR_PushMLSpeed`, and `IDR_GetState`. Lowercase compatibility wrappers are also declared. The current implementations are safe baseline interfaces, not a production-grade INS/UKF/HMM implementation.
+
+## Backend
+
+The FastAPI service is in `backend/`:
+
+```text
+backend/
+├── app/
+│   ├── main.py
+│   ├── config.py
+│   ├── api/v1/                  # telemetry, session, maps, models_hub
+│   ├── api/websockets/          # live dashboard and connection manager
+│   ├── core/                    # database, Redis, security, exceptions
+│   ├── models/                  # SQLAlchemy model definitions
+│   ├── schemas/                 # Pydantic request/response schemas
+│   └── services/                # drift, map query, replay services
+├── Dockerfile
+└── requirements.txt
+```
+
+Available route groups include `/health`, `/api/v1/telemetry`, `/api/v1/session`, `/api/v1/maps`, `/api/v1/models`, and `/ws/judge-dashboard`. Local development uses an in-memory telemetry store and initializes a SQLite database by default. Docker Compose supplies PostgreSQL/PostGIS and Redis configuration, but Redis is currently an integration boundary rather than the active telemetry transport.
+
+## Machine Learning
+
+```text
+ml/
+├── data/                           # raw, processed, and train/val/test locations
+├── notebooks/                      # Notebook location
+├── src/
+│   ├── dataset/                    # IMU windows and augmentations
+│   ├── features/                   # Temporal and frequency features
+│   ├── models/                     # Speed and vibration model boundaries
+│   ├── training/                   # Training loops, losses, callbacks
+│   ├── evaluation/                 # Metrics and trajectory comparison
+│   └── export/                     # ONNX, TFLite, and INT8 export boundaries
+└── configs/                        # Speed and vibration YAML settings
+```
+
+The correct export path is `ml/src/export/export_tflite.py`. The training and conversion functions currently raise `NotImplementedError` until datasets and ML dependencies are added.
+
+## Simulation
+
+```text
+simulation/
+├── scenarios/
+│   ├── tunnel_60s_outage.json
+│   ├── urban_canyon_multipath.json
+│   └── flyover_level_split.json
+├── core/                           # Mock device and corruption boundaries
+├── replay/                         # Replay runner and log export
+└── evaluate/                       # Trajectory scoring and report boundary
+```
+
+The simulation layer is prepared for drive logs but does not yet provide a complete physical-sensor replay or PDF reporting implementation.
+
+## Maps
+
+```text
+maps/
+├── raw_osm/                        # Location for .osm.pbf inputs
+├── processed_graphs/
+│   ├── road_nodes.json
+│   └── road_edges.json
+├── demo-region/roads.json          # Existing demo road network
+└── tools/
+    ├── osm_parser.py
+    ├── graph_builder.py
+    └── geojson_converter.py
+```
+
+The OSM parser and binary graph serializer are architecture-level boundaries. No raw PBF or `spatial_index.bin` is currently committed.
+
+## Datasets
+
+```text
+datasets/
+├── raw_field_tests/                # Git LFS location for drive-session CSV files
+└── benchmarks/                     # SIH evaluation benchmark location
+```
+
+Both directories currently contain placeholders only. Large `.csv`, `.pbf`, `.bin`, and `.tflite` files are configured for Git LFS in `.gitattributes`.
+
+## Configuration
+
+- `config/development.json`: repository-level development configuration.
+- `frontend/assets/config/navigation_config.json`: frontend navigation configuration.
+- `frontend/assets/config/tuning_parameters.json`: navigation tuning parameters.
+- Backend environment variables use the `SIH_` prefix, including `SIH_DATABASE_URL` and `SIH_REDIS_URL`.
+
+## Setup and Commands
+
+### Flutter
+
+```bash
+cd frontend
+flutter pub get
+flutter analyze
+flutter run
+```
+
+### Backend
+
+```bash
+python -m venv .venv
+# Activate the environment using your platform's command.
+pip install -r backend/requirements.txt
+uvicorn app.main:app --app-dir backend --reload
+```
+
+The API documentation is available at `http://127.0.0.1:8000/docs`.
+
+### C++
+
+```bash
+cmake -S cpp-core -B build/cpp-core
+cmake --build build/cpp-core --config Release
+```
+
+This requires CMake, a C++17 compiler, Eigen3, and Threads. Platform scripts are available in `scripts/`, but require the Android NDK, Xcode, or Emscripten as appropriate.
+
+### Docker services
+
+```bash
+docker compose up --build
+```
+
+This starts the backend, PostGIS database, and Redis services from `docker-compose.yml`.
+
+### Workflow scripts
+
+```text
+scripts/setup_all.sh              # Environment and dependency setup
+scripts/build_cpp_android.sh      # Android native builds
+scripts/build_cpp_ios.sh          # iOS build scaffold
+scripts/build_cpp_wasm.sh         # WebAssembly build scaffold
+scripts/train_and_export_all.sh   # ML workflow scaffold
+scripts/run_simulation.sh         # Backend/replay workflow scaffold
+scripts/generate_maps.sh           # OSM graph workflow scaffold
+```
+
+These shell scripts target Unix-like shells. Bash is not included with the repository and must be installed separately on Windows, or the underlying commands can be run directly in PowerShell.
+
+## Validation
+
+Available checks in the current repository:
+
+```bash
+cd frontend && flutter analyze
+python -m compileall ml/src maps/tools simulation
+git diff --check
+```
+
+Dedicated automated tests for the frontend, backend, C++ core, ML pipeline, maps, and simulation are not currently committed.
+
+## Contributing
+
+Keep changes within the owning component, add tests when implementing behavior, and update this README whenever a directory or build command changes. Do not commit generated build outputs, local databases, model binaries, or datasets outside their configured Git LFS paths.
+
+## License
+
+No license file is currently included. Add a project license before distributing the software.

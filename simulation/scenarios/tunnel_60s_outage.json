@@ -1,0 +1,11 @@
+{
+  "name": "tunnel_60s_outage",
+  "duration_seconds": 60,
+  "events": [
+    {
+      "type": "hard_gnss_outage",
+      "start_seconds": 0,
+      "duration_seconds": 60
+    }
+  ]
+}

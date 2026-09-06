@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.db
+.env
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+
+# Native build outputs
+cmake-build-*/
+
+# Generated ML data and model outputs
+ml/data/raw/*
+ml/data/processed/*
+ml/data/splits/*
+ml/notebooks/*.ipynb
+backend/model_artifacts/*
+
+# Keep directory placeholders
+!**/.gitkeep

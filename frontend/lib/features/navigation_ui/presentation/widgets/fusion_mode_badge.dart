@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../app/theme.dart';
-import '../../models/navigation_state.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../navigation_engine/domain/entities/navigation_state.dart';
 
 class FusionModeBadge extends StatelessWidget {
   final FusionMode fusionMode;
@@ -37,11 +37,12 @@ class FusionModeBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _getModeColor();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.4), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -54,7 +55,7 @@ class FusionModeBadge extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.6),
+                  color: color.withValues(alpha: 0.6),
                   blurRadius: 6,
                   spreadRadius: 1,
                 )

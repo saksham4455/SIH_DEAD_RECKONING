@@ -1,0 +1,6 @@
+{
+  "imuSamplingRateHz": 100,
+  "gnssSamplingRateHz": 1,
+  "defaultFusionMode": "GNSS_LOCKED",
+  "enableAiOdometry": true
+}

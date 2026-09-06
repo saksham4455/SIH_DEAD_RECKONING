@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../app/theme.dart';
-import '../../models/navigation_state.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../navigation_engine/domain/entities/navigation_state.dart';
 
 class AiInferencePanel extends StatelessWidget {
   final InferenceStatsModel inferenceStats;
 
-  const AiInferencePanel({Key? key, required this.inferenceStats}) : super(key: key);
+  const AiInferencePanel({Key? key, required this.inferenceStats})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,14 +26,23 @@ class AiInferencePanel extends StatelessWidget {
             children: [
               const Text(
                 'EDGE AI SPEED ESTIMATOR & ODOMETRY',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: AppColors.cyan.withOpacity(0.15), borderRadius: BorderRadius.circular(4)),
+                decoration: BoxDecoration(
+                    color: AppColors.cyan.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(4)),
                 child: Text(
                   inferenceStats.modelVersion,
-                  style: const TextStyle(color: AppColors.cyan, fontSize: 10, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: AppColors.cyan,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -44,8 +54,14 @@ class AiInferencePanel extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('LATENCY', style: TextStyle(color: AppColors.textMuted, fontSize: 10)),
-                    Text('${inferenceStats.latencyMs} ms', style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                    const Text('LATENCY',
+                        style: TextStyle(
+                            color: AppColors.textMuted, fontSize: 10)),
+                    Text('${inferenceStats.latencyMs} ms',
+                        style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14)),
                   ],
                 ),
               ),
@@ -53,8 +69,14 @@ class AiInferencePanel extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('EST. SPEED', style: TextStyle(color: AppColors.textMuted, fontSize: 10)),
-                    Text('${inferenceStats.estimatedSpeed} m/s', style: const TextStyle(color: AppColors.cyan, fontWeight: FontWeight.bold, fontSize: 14)),
+                    const Text('EST. SPEED',
+                        style: TextStyle(
+                            color: AppColors.textMuted, fontSize: 10)),
+                    Text('${inferenceStats.estimatedSpeed} m/s',
+                        style: const TextStyle(
+                            color: AppColors.cyan,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14)),
                   ],
                 ),
               ),
@@ -62,8 +84,14 @@ class AiInferencePanel extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('AI CONF', style: TextStyle(color: AppColors.textMuted, fontSize: 10)),
-                    Text('${(inferenceStats.confidence * 100).round()}%', style: const TextStyle(color: AppColors.healthy, fontWeight: FontWeight.bold, fontSize: 14)),
+                    const Text('AI CONF',
+                        style: TextStyle(
+                            color: AppColors.textMuted, fontSize: 10)),
+                    Text('${(inferenceStats.confidence * 100).round()}%',
+                        style: const TextStyle(
+                            color: AppColors.healthy,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14)),
                   ],
                 ),
               ),

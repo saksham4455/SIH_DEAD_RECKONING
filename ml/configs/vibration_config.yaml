@@ -1,0 +1,7 @@
+model: VibrationClassifier
+classes:
+  - smooth
+  - rough
+  - pothole
+  - speed_breaker
+sampling_rate_hz: 100

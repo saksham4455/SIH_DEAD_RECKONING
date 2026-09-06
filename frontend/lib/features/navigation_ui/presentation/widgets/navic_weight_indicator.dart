@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../app/theme.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class NavicWeightIndicator extends StatelessWidget {
   final double navicWeight;
 
-  const NavicWeightIndicator({Key? key, required this.navicWeight}) : super(key: key);
+  const NavicWeightIndicator({Key? key, required this.navicWeight})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +26,19 @@ class NavicWeightIndicator extends StatelessWidget {
             children: [
               const Text(
                 'NavIC FUSION WEIGHT',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+                style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8),
               ),
               Text(
                 '$weightPercent%',
-                style: const TextStyle(color: AppColors.navIC, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'monospace'),
+                style: const TextStyle(
+                    color: AppColors.navIC,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    fontFamily: 'monospace'),
               ),
             ],
           ),

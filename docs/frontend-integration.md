@@ -1,30 +1,30 @@
 # Frontend Integration Contract
 
-This document defines the architectural boundary, data flow, and contract between the React Native frontend (`mobile/`) and the underlying navigation engine, native bridges, and services for the Intelligent Dead Reckoning System.
+This document defines the architectural boundary, data flow, and contract between the Flutter frontend (`frontend/`) and the underlying navigation engine and native FFI bridge for the Intelligent Dead Reckoning System.
 
 ---
 
 ## A. Frontend Responsibilities
 
-The React Native application layer has a strictly defined scope:
+The Flutter application layer has a strictly defined scope:
 
 ### In Scope for Frontend
 - **UI Rendering**: Constructing and rendering tactical telemetry displays, map visualizations, status indicators, and diagnostic panels.
-- **Screen Navigation**: Managing transitions between application screens (e.g., `DashboardScreen` ↔ `SessionScreen`) via React Navigation.
+- **Screen Navigation**: Managing transitions between Flutter screens through the application router.
 - **User Interaction**: Handling touch events, button presses, and UI layout toggles.
 - **Displaying Engine Outputs**: Receiving and formatting output data from the navigation core for user presentation.
-- **Local Presentation State**: Managing component-level visual states (e.g., collapsed diagnostic panels, visual mock outage cues, timer displays).
+- **Local Presentation State**: Managing widget-level visual states and navigation status.
 
 ### Out of Scope for Frontend (Strict Architectural Boundary)
-The React Native frontend explicitly does **NOT**:
+The Flutter frontend explicitly does **NOT**:
 - Perform sensor fusion mathematics (e.g., EKF/UKF matrix operations).
 - Compute dead reckoning trajectories or kinematic integrations.
 - Parse or process raw GNSS NMEA/RTCM ephemeris or multi-constellation signals.
-- Execute edge AI inference, neural network runtimes, or visual odometry models.
-- Directly acquire native sensor hardware streams (accelerometer, gyroscope, magnetometer).
+- Execute native high-frequency estimation loops outside the defined Dart inference boundary.
+- Bypass the sensor, preprocessing, fusion, or FFI modules with ad hoc data paths.
 - Execute file I/O or persist binary telemetry logs directly in JavaScript.
 
-All complex sensor mathematics, high-frequency estimation loops, and native sensor polling belong exclusively in the C++ navigation core and native platform layers (Android/iOS).
+Complex sensor mathematics and high-frequency native estimation loops belong in the C++ navigation core and native platform layers. Dart owns orchestration, preprocessing, inference integration, state, and presentation.
 
 ---
 
@@ -77,32 +77,32 @@ The data access architecture guarantees that screens and components remain compl
 Currently, the data access boundary is isolated to a single hook:
 
 ```text
-mockDashboardData (from mobile/src/data/mockData.ts)
+navigation state and telemetry (from frontend/lib/state/ and frontend/lib/navigation/)
                     ↓
-           useNavigationData()
+           frontend/lib/ffi/ and fusion managers
                     ↓
-             DashboardScreen
+             frontend/lib/ui/
 ```
 
-`mobile/src/hooks/useNavigationData.ts` ingests static baseline mock telemetry from `mobile/src/data/mockData.ts` and returns a strongly typed `DashboardData` structure. `DashboardScreen` and its child components have no direct dependency on `mockData.ts`.
+The Flutter frontend receives navigation state through the Dart modules under `frontend/lib/state/`, `frontend/lib/navigation/`, and `frontend/lib/ffi/`. UI widgets under `frontend/lib/ui/` consume that state without owning the native estimation mathematics.
 
 ---
 
 ## D. Future Implementation
 
-When live navigation telemetry is integrated, the integration point is **exclusively** inside `mobile/src/hooks/useNavigationData.ts`:
+When live navigation telemetry is integrated, the integration point is the existing Dart FFI and navigation boundary in `frontend/lib/ffi/` and `frontend/lib/navigation/`:
 
 - The hook can subscribe to:
-  - An event-driven telemetry stream from the TypeScript engine orchestration layer (`mobile/src/engine/`).
-  - Native module bridges (`mobile/src/native/`).
-  - A centralized navigation store (`mobile/src/store/`).
+  - Sensor and GNSS streams from `frontend/lib/sensors/` and `frontend/lib/gnss/`.
+  - Native bindings from `frontend/lib/ffi/`.
+  - Fusion and navigation state from `frontend/lib/fusion/`, `frontend/lib/state/`, and `frontend/lib/navigation/`.
 - **No changes** will be required in `DashboardScreen.tsx` or any of the child diagnostic/navigation components. They will continue to consume `DashboardData` via `useNavigationData()` and render incoming values reactively.
 
 ---
 
 ## E. `DashboardData` Integration Contract
 
-The integration contract between the data source and the frontend is codified in [`mobile/src/types/navigation.ts`](file:///c:/Users/pc/.gemini/antigravity-ide/scratch/SIH_DEAD_RECKONING/mobile/src/types/navigation.ts):
+The integration contract between the data source and the frontend is implemented by the Dart models and state types under `frontend/lib/models/`, `frontend/lib/fusion/`, and `frontend/lib/navigation/`.
 
 ### Primary Structure: `DashboardData`
 

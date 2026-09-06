@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../app/theme.dart';
-import '../../models/navigation_state.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../navigation_engine/domain/entities/navigation_state.dart';
 
 class SensorHealthBar extends StatelessWidget {
   final SensorHealthModel sensorHealth;
 
-  const SensorHealthBar({Key? key, required this.sensorHealth}) : super(key: key);
+  const SensorHealthBar({Key? key, required this.sensorHealth})
+      : super(key: key);
 
   Widget _buildSensorPill(String name, bool isHealthy) {
     final color = isHealthy ? AppColors.healthy : AppColors.error;
@@ -13,9 +14,9 @@ class SensorHealthBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [

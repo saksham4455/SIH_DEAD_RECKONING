@@ -1,0 +1,12 @@
+{
+  "name": "urban_canyon_multipath",
+  "duration_seconds": 90,
+  "events": [
+    {
+      "type": "multipath_drift",
+      "start_seconds": 10,
+      "duration_seconds": 45,
+      "drift_meters": 25
+    }
+  ]
+}

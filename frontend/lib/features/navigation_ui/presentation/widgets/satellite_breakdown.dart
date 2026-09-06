@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../app/theme.dart';
-import '../../models/navigation_state.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../navigation_engine/domain/entities/navigation_state.dart';
 
 class SatelliteBreakdown extends StatelessWidget {
   final SatelliteBreakdownModel satelliteBreakdown;
 
-  const SatelliteBreakdown({Key? key, required this.satelliteBreakdown}) : super(key: key);
+  const SatelliteBreakdown({Key? key, required this.satelliteBreakdown})
+      : super(key: key);
 
-  Widget _buildConstellationRow(String name, SatelliteInfoModel info, Color color) {
+  Widget _buildConstellationRow(
+      String name, SatelliteInfoModel info, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -15,14 +17,23 @@ class SatelliteBreakdown extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+              Container(
+                  width: 8,
+                  height: 8,
+                  decoration:
+                      BoxDecoration(color: color, shape: BoxShape.circle)),
               const SizedBox(width: 8),
-              Text(name, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(name,
+                  style: TextStyle(
+                      color: color, fontWeight: FontWeight.bold, fontSize: 13)),
             ],
           ),
           Text(
             '${info.count} Sats • ${info.signalStrength} dBHz',
-            style: const TextStyle(color: AppColors.textSecondary, fontFamily: 'monospace', fontSize: 12),
+            style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontFamily: 'monospace',
+                fontSize: 12),
           ),
         ],
       ),
@@ -44,13 +55,21 @@ class SatelliteBreakdown extends StatelessWidget {
         children: [
           const Text(
             'MULTI-GNSS CONSTELLATION RECEPTION',
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.8),
+            style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.8),
           ),
           const SizedBox(height: 8),
-          _buildConstellationRow('NavIC (IRNSS)', satelliteBreakdown.navIC, AppColors.navIC),
-          _buildConstellationRow('GPS (USA)', satelliteBreakdown.gps, AppColors.gps),
-          _buildConstellationRow('Galileo (EU)', satelliteBreakdown.galileo, AppColors.galileo),
-          _buildConstellationRow('GLONASS (RU)', satelliteBreakdown.glonass, AppColors.glonass),
+          _buildConstellationRow(
+              'NavIC (IRNSS)', satelliteBreakdown.navIC, AppColors.navIC),
+          _buildConstellationRow(
+              'GPS (USA)', satelliteBreakdown.gps, AppColors.gps),
+          _buildConstellationRow(
+              'Galileo (EU)', satelliteBreakdown.galileo, AppColors.galileo),
+          _buildConstellationRow(
+              'GLONASS (RU)', satelliteBreakdown.glonass, AppColors.glonass),
         ],
       ),
     );

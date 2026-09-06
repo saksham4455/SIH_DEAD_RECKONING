@@ -1,4 +1,4 @@
 ﻿#!/bin/bash
 echo 'Building Flutter Application...'
-cd mobile && flutter build apk --release
+cd frontend && flutter build apk --release
 

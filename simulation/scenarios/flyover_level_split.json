@@ -1,0 +1,12 @@
+{
+  "name": "flyover_level_split",
+  "duration_seconds": 75,
+  "events": [
+    {
+      "type": "multipath_drift",
+      "start_seconds": 15,
+      "duration_seconds": 30,
+      "drift_meters": 40
+    }
+  ]
+}

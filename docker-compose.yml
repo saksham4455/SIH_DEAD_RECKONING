@@ -1,0 +1,26 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      SIH_DATABASE_URL: postgresql+asyncpg://sih:sih@db:5432/sih
+      SIH_REDIS_URL: redis://cache:6379/0
+    depends_on:
+      - db
+      - cache
+
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: sih
+      POSTGRES_USER: sih
+      POSTGRES_PASSWORD: sih
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  cache:
+    image: redis:7-alpine
+
+volumes:
+  postgres_data:

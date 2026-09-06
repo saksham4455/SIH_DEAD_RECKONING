@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../app/theme.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class SessionControls extends StatelessWidget {
   const SessionControls({Key? key}) : super(key: key);
@@ -25,21 +25,26 @@ class SessionControls extends StatelessWidget {
     );
   }
 
-  Widget _buildControlButton(BuildContext context, String label, IconData icon) {
+  Widget _buildControlButton(
+      BuildContext context, String label, IconData icon) {
     return Column(
       children: [
         IconButton(
           onPressed: () {},
           icon: Icon(icon, color: AppColors.cyan),
           style: IconButton.styleFrom(
-            backgroundColor: AppColors.cyan.withOpacity(0.1),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            backgroundColor: AppColors.cyan.withValues(alpha: 0.1),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 10, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 10,
+              fontWeight: FontWeight.bold),
         ),
       ],
     );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../app/theme.dart';
-import '../../models/navigation_state.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../navigation_engine/domain/entities/navigation_state.dart';
 
 class NavigationMap extends StatelessWidget {
   final NavigationStateModel navigationState;
@@ -45,11 +45,13 @@ class NavigationMap extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.surface.withOpacity(0.8),
+                    color: AppColors.surface.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: AppColors.cyan.withOpacity(0.4)),
+                    border: Border.all(
+                        color: AppColors.cyan.withValues(alpha: 0.4)),
                   ),
                   child: Text(
                     '${navigationState.latitude.toStringAsFixed(4)}° N, ${navigationState.longitude.toStringAsFixed(4)}° E',
@@ -71,14 +73,18 @@ class NavigationMap extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.surface.withOpacity(0.9),
+                color: AppColors.surface.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: const Row(
                 children: [
                   Icon(Icons.map, size: 12, color: AppColors.cyan),
                   SizedBox(width: 4),
-                  Text('TACTICAL VECTOR', style: TextStyle(color: AppColors.cyan, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text('TACTICAL VECTOR',
+                      style: TextStyle(
+                          color: AppColors.cyan,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -93,7 +99,7 @@ class GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.surfaceBorder.withOpacity(0.3)
+      ..color = AppColors.surfaceBorder.withValues(alpha: 0.3)
       ..strokeWidth = 1;
 
     for (double i = 0; i < size.width; i += 20) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../app/theme.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class TelemetryCard extends StatelessWidget {
   final String label;
@@ -58,7 +58,7 @@ class TelemetryCard extends StatelessWidget {
                   Text(
                     unit!,
                     style: TextStyle(
-                      color: accentColor.withOpacity(0.8),
+                      color: accentColor.withValues(alpha: 0.8),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
