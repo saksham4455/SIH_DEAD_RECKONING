@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
-from app.api.v1 import maps, models_hub, session, telemetry
+from app.api.v1 import auth, devices, maps, models_hub, session, telemetry
 from app.api.websockets import live_dashboard
 from app.api.websockets.subscriber import run_telemetry_subscriber
 from app.config import Settings, get_settings
@@ -73,6 +73,8 @@ def register_middleware(application: FastAPI, settings: Settings) -> None:
 
 def register_routers(application: FastAPI) -> None:
     """Register API and WebSocket routers."""
+    application.include_router(auth.router, prefix="/api/v1")
+    application.include_router(devices.router, prefix="/api/v1")
     application.include_router(telemetry.router, prefix="/api/v1")
     application.include_router(session.router, prefix="/api/v1")
     application.include_router(maps.router, prefix="/api/v1")
@@ -131,7 +133,6 @@ def create_app() -> FastAPI:
     """Application factory constructing the authoritative FastAPI instance."""
     settings = get_settings()
 
-    # Configure root logging format and level
     logging.basicConfig(
         level=getattr(logging, settings.log_level.upper(), logging.INFO),
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -143,7 +144,6 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Pre-initialize state defaults for safe direct ASGI inspection
     application.state.database = get_store()
     application.state.ws_manager = live_dashboard.manager
     application.state.redis_client = None

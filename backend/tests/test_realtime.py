@@ -23,9 +23,12 @@ from app.core.redis_client import (
     shutdown_redis_client,
     startup_redis_client,
 )
+from app.core.security import get_current_device
 from app.main import create_app
 from app.models.base import Base
+from app.models.device import Device
 from app.models.drive_session import DriveSession
+
 from app.schemas.telemetry_schema import (
     TelemetryIn,
     TelemetryOut,
@@ -327,6 +330,7 @@ async def test_7_duplicate_broadcast_prevention_e2e():
 
     app = create_app()
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_device] = lambda: Device(id="dev-1", device_id_hash="hash", is_active=True)
 
     fake_redis = FakeRedis()
     app.state.redis_client = fake_redis
@@ -379,6 +383,8 @@ async def test_8_local_fallback_broadcast_when_redis_disabled():
 
     app = create_app()
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_device] = lambda: Device(id="dev-1", device_id_hash="hash", is_active=True)
+
     app.state.redis_client = None  # Redis disabled
 
     manager = ConnectionManager()

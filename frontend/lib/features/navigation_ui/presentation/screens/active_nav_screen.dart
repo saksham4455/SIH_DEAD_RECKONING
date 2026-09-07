@@ -38,6 +38,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
   int _sampleCount = 0;
   bool _hasGpsFix = false;
   bool _simulateTunnelBlackout = false;
+  bool _simulateUrbanCanyon = false;
+  bool _isArgsInitialized = false;
   double _blackoutDistance = 0.0;
 
   @override
@@ -45,6 +47,27 @@ class _NavigationScreenState extends State<NavigationScreen> {
     super.initState();
     _startLiveSensors();
     _initRealGpsLocation();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isArgsInitialized) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is FusionMode) {
+        if (args == FusionMode.deadReckoning) {
+          _simulateTunnelBlackout = true;
+          _simulateUrbanCanyon = false;
+        } else if (args == FusionMode.gnssDegraded) {
+          _simulateUrbanCanyon = true;
+          _simulateTunnelBlackout = false;
+        } else {
+          _simulateTunnelBlackout = false;
+          _simulateUrbanCanyon = false;
+        }
+      }
+      _isArgsInitialized = true;
+    }
   }
 
   void _initRealGpsLocation() async {
@@ -184,14 +207,18 @@ class _NavigationScreenState extends State<NavigationScreen> {
   Widget build(BuildContext context) {
     final activeFusionMode = _simulateTunnelBlackout
         ? FusionMode.deadReckoning
-        : (_hasGpsFix ? FusionMode.gnssLocked : FusionMode.deadReckoning);
+        : (_simulateUrbanCanyon
+            ? FusionMode.gnssDegraded
+            : (_hasGpsFix ? FusionMode.gnssLocked : FusionMode.deadReckoning));
 
     final liveNavState = NavigationStateModel(
       latitude: _liveLat,
       longitude: _liveLon,
       heading: _liveHeading,
       speed: _liveSpeed,
-      confidence: _simulateTunnelBlackout ? 0.94 : (_hasGpsFix ? 0.99 : 0.88),
+      confidence: _simulateTunnelBlackout
+          ? 0.94
+          : (_simulateUrbanCanyon ? 0.88 : (_hasGpsFix ? 0.99 : 0.88)),
       fusionMode: activeFusionMode,
     );
 
@@ -224,72 +251,125 @@ class _NavigationScreenState extends State<NavigationScreen> {
               FusionModeBadge(fusionMode: liveNavState.fusionMode),
               const SizedBox(height: 10),
 
-              // Interactive Tunnel Blackout / Pure INS Toggle Bar
+              // Interactive Mode Selector Chips & Banner
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: _simulateTunnelBlackout
                       ? AppColors.error.withValues(alpha: 0.15)
-                      : AppColors.surface,
-                  borderRadius: BorderRadius.circular(8),
+                      : (_simulateUrbanCanyon
+                          ? AppColors.warning.withValues(alpha: 0.15)
+                          : AppColors.surface),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: _simulateTunnelBlackout
                         ? AppColors.error
-                        : AppColors.surfaceBorder,
+                        : (_simulateUrbanCanyon
+                            ? AppColors.warning
+                            : AppColors.surfaceBorder),
+                    width: 1.5,
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
                   children: [
                     Row(
                       children: [
                         Icon(
                           _simulateTunnelBlackout
                               ? Icons.gps_off
-                              : Icons.location_on,
+                              : (_simulateUrbanCanyon
+                                  ? Icons.location_city
+                                  : Icons.location_on),
                           color: _simulateTunnelBlackout
                               ? AppColors.error
-                              : AppColors.cyan,
-                          size: 18,
+                              : (_simulateUrbanCanyon
+                                  ? AppColors.warning
+                                  : AppColors.cyan),
+                          size: 20,
                         ),
                         const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _simulateTunnelBlackout
-                                  ? 'TUNNEL MODE (GNSS OUTAGE)'
-                                  : (_hasGpsFix ? 'GNSS LOCK ACTIVE' : 'PURE INS (NO GPS)'),
-                              style: TextStyle(
-                                color: _simulateTunnelBlackout
-                                    ? AppColors.error
-                                    : AppColors.textPrimary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _simulateTunnelBlackout
+                                    ? 'TUNNEL BLACKOUT TEST (PURE INS)'
+                                    : (_simulateUrbanCanyon
+                                        ? 'URBAN CANYON MULTIPATH (EKF FUSION)'
+                                        : 'NOMINAL GNSS LOCK ACTIVE'),
+                                style: TextStyle(
+                                  color: _simulateTunnelBlackout
+                                      ? AppColors.error
+                                      : (_simulateUrbanCanyon
+                                          ? AppColors.warning
+                                          : AppColors.textPrimary),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            Text(
-                              _simulateTunnelBlackout
-                                  ? 'INS DR: ${_blackoutDistance.toStringAsFixed(1)}m travelled'
-                                  : (_hasGpsFix ? 'Hardware GPS Fused' : 'Operating on IMU Dead Reckoning'),
-                              style: const TextStyle(
-                                color: AppColors.textMuted,
-                                fontSize: 9,
+                              Text(
+                                _simulateTunnelBlackout
+                                    ? 'INS DR: ${_blackoutDistance.toStringAsFixed(1)}m travelled • 0 dB SNR'
+                                    : (_simulateUrbanCanyon
+                                        ? 'High DOP (4.8) • 4 Weak Satellites • NavIC Weight 0.35'
+                                        : 'Hardware GPS + NavIC Fused • High Accuracy'),
+                                style: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 9,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    Switch(
-                      value: _simulateTunnelBlackout,
-                      activeThumbColor: AppColors.error,
-                      onChanged: (val) {
-                        setState(() {
-                          _simulateTunnelBlackout = val;
-                          if (val) _blackoutDistance = 0.0;
-                        });
-                      },
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildNavModeChip(
+                            label: 'NOMINAL',
+                            isSelected: !_simulateTunnelBlackout && !_simulateUrbanCanyon,
+                            activeColor: AppColors.cyan,
+                            onTap: () {
+                              setState(() {
+                                _simulateTunnelBlackout = false;
+                                _simulateUrbanCanyon = false;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: _buildNavModeChip(
+                            label: 'URBAN CANYON',
+                            isSelected: _simulateUrbanCanyon,
+                            activeColor: AppColors.warning,
+                            onTap: () {
+                              setState(() {
+                                _simulateTunnelBlackout = false;
+                                _simulateUrbanCanyon = true;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: _buildNavModeChip(
+                            label: 'TUNNEL TEST',
+                            isSelected: _simulateTunnelBlackout,
+                            activeColor: AppColors.error,
+                            onTap: () {
+                              setState(() {
+                                _simulateTunnelBlackout = true;
+                                _simulateUrbanCanyon = false;
+                                _blackoutDistance = 0.0;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -331,7 +411,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
               Expanded(
                 child: NavigationMap(
                   navigationState: liveNavState,
-                  mapMatchConfidence: 0.96,
+                  mapMatchConfidence: _simulateUrbanCanyon ? 0.82 : 0.96,
                 ),
               ),
               const SizedBox(height: 16),
@@ -380,6 +460,38 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavModeChip({
+    required String label,
+    required bool isSelected,
+    required Color activeColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withValues(alpha: 0.2) : AppColors.surface,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: isSelected ? activeColor : AppColors.surfaceBorder,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? activeColor : AppColors.textMuted,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

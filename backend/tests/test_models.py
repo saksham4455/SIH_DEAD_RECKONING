@@ -36,6 +36,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 import app.core.database
 from app.core.database import get_db
+from app.core.security import require_admin
 from app.main import create_app
 from app.models.base import Base
 from app.models.model_version import ModelVersion
@@ -57,6 +58,7 @@ geo_sqlite.after_create = lambda *a, **k: None
 
 # Canonical valid minimal TFLite dummy bytes with 'TFL3' header
 SAMPLE_TFLITE_BYTES = b"TFL3\x00\x00\x00\x00\x1c\x00\x00\x00model_sample_weights_dummy_data"
+
 
 
 class MemoryStorageClient(ObjectStorageClient):
@@ -439,6 +441,7 @@ async def test_16_http_api_end_to_end(mem_storage: MemoryStorageClient):
 
     app = create_app()
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[require_admin] = lambda: None
 
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:

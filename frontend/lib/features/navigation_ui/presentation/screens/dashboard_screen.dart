@@ -40,8 +40,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _sampleCount = 0;
   bool _hasGpsFix = false;
 
-  // SIH 2026 Interactive Tunnel Outage Demo Switch
+  // SIH 2026 Interactive Outage & Canyon Demo Switches
   bool _simulateTunnelBlackout = false;
+  bool _simulateUrbanCanyon = false;
   double _blackoutDistanceTravelled = 0.0;
 
   final List<AnomalyEventModel> _liveAnomalies = [
@@ -206,14 +207,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final activeFusionMode = _simulateTunnelBlackout
         ? FusionMode.deadReckoning
-        : (_hasGpsFix ? FusionMode.gnssLocked : FusionMode.deadReckoning);
+        : (_simulateUrbanCanyon
+            ? FusionMode.gnssDegraded
+            : (_hasGpsFix ? FusionMode.gnssLocked : FusionMode.deadReckoning));
 
     final liveNavState = NavigationStateModel(
       latitude: _liveLat,
       longitude: _liveLon,
       heading: _liveHeading,
       speed: _liveSpeed,
-      confidence: _simulateTunnelBlackout ? 0.94 : (_hasGpsFix ? 0.99 : 0.85),
+      confidence: _simulateTunnelBlackout
+          ? 0.94
+          : (_simulateUrbanCanyon ? 0.88 : (_hasGpsFix ? 0.99 : 0.85)),
       fusionMode: activeFusionMode,
     );
 
@@ -227,32 +232,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
       gnss: !_simulateTunnelBlackout && _hasGpsFix,
     );
 
-    final liveSatelliteBreakdown = SatelliteBreakdownModel(
-      navIC: SatelliteInfoModel(
-        count: _simulateTunnelBlackout ? 0 : 7,
-        signalStrength: _simulateTunnelBlackout ? 0.0 : (44.0 + (sin(_sampleCount * 0.1) * 2.5)),
-      ),
-      gps: SatelliteInfoModel(
-        count: _simulateTunnelBlackout ? 0 : 9,
-        signalStrength: _simulateTunnelBlackout ? 0.0 : (41.5 + (cos(_sampleCount * 0.08) * 2.0)),
-      ),
-      galileo: SatelliteInfoModel(
-        count: _simulateTunnelBlackout ? 0 : 4,
-        signalStrength: _simulateTunnelBlackout ? 0.0 : (32.0 + (sin(_sampleCount * 0.05) * 1.5)),
-      ),
-      glonass: SatelliteInfoModel(
-        count: _simulateTunnelBlackout ? 0 : 5,
-        signalStrength: _simulateTunnelBlackout ? 0.0 : (35.0 + (cos(_sampleCount * 0.06) * 1.8)),
-      ),
-    );
+    final liveSatelliteBreakdown = _simulateTunnelBlackout
+        ? const SatelliteBreakdownModel(
+            navIC: SatelliteInfoModel(count: 0, signalStrength: 0.0),
+            gps: SatelliteInfoModel(count: 0, signalStrength: 0.0),
+            galileo: SatelliteInfoModel(count: 0, signalStrength: 0.0),
+            glonass: SatelliteInfoModel(count: 0, signalStrength: 0.0),
+          )
+        : (_simulateUrbanCanyon
+            ? const SatelliteBreakdownModel(
+                navIC: SatelliteInfoModel(count: 2, signalStrength: 21.0),
+                gps: SatelliteInfoModel(count: 2, signalStrength: 18.5),
+                galileo: SatelliteInfoModel(count: 0, signalStrength: 0.0),
+                glonass: SatelliteInfoModel(count: 0, signalStrength: 0.0),
+              )
+            : SatelliteBreakdownModel(
+                navIC: SatelliteInfoModel(
+                    count: 7, signalStrength: 44.0 + (sin(_sampleCount * 0.1) * 2.5)),
+                gps: SatelliteInfoModel(
+                    count: 9, signalStrength: 41.5 + (cos(_sampleCount * 0.08) * 2.0)),
+                galileo: SatelliteInfoModel(
+                    count: 4, signalStrength: 32.0 + (sin(_sampleCount * 0.05) * 1.5)),
+                glonass: SatelliteInfoModel(
+                    count: 5, signalStrength: 35.0 + (cos(_sampleCount * 0.06) * 1.8)),
+              ));
 
-    final liveNavicWeight = _simulateTunnelBlackout ? 0.0 : 0.65;
-    final liveMapMatchConfidence = 0.96;
+    final liveNavicWeight = _simulateTunnelBlackout
+        ? 0.0
+        : (_simulateUrbanCanyon ? 0.35 : 0.65);
+    final liveMapMatchConfidence = _simulateUrbanCanyon ? 0.82 : 0.96;
 
     final liveInferenceStats = InferenceStatsModel(
       latencyMs: 16 + (_sampleCount % 7),
       modelVersion: 'v2.4.1-edge-tflite',
-      confidence: 0.94,
+      confidence: _simulateUrbanCanyon ? 0.88 : 0.94,
       estimatedSpeed: _liveSpeed,
     );
 
@@ -337,75 +350,123 @@ class _DashboardScreenState extends State<DashboardScreen> {
               FusionModeBadge(fusionMode: liveNavState.fusionMode),
               const SizedBox(height: 12),
 
-              // SIH26168 Interactive Tunnel Blackout Switch & Mount Calibration Bar
+              // SIH26168 Interactive Mode Selector Card
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: _simulateTunnelBlackout
                       ? AppColors.error.withValues(alpha: 0.15)
-                      : AppColors.surface,
+                      : (_simulateUrbanCanyon
+                          ? AppColors.warning.withValues(alpha: 0.15)
+                          : AppColors.surface),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: _simulateTunnelBlackout
                         ? AppColors.error
-                        : AppColors.surfaceBorder,
+                        : (_simulateUrbanCanyon
+                            ? AppColors.warning
+                            : AppColors.surfaceBorder),
                     width: 1.5,
                   ),
                 ),
                 child: Column(
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              _simulateTunnelBlackout
-                                  ? Icons.gps_off
-                                  : Icons.location_on,
-                              color: _simulateTunnelBlackout
-                                  ? AppColors.error
-                                  : AppColors.cyan,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _simulateTunnelBlackout
-                                      ? 'TUNNEL MODE (GNSS BLACKOUT)'
-                                      : 'SIH26168 GNSS BLACKOUT DEMO',
-                                  style: TextStyle(
-                                    color: _simulateTunnelBlackout
-                                        ? AppColors.error
-                                        : AppColors.textPrimary,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  _simulateTunnelBlackout
-                                      ? 'AI DR Active: ${_blackoutDistanceTravelled.toStringAsFixed(1)}m travelled'
-                                      : 'Tap switch to test Dead Reckoning',
-                                  style: const TextStyle(
-                                    color: AppColors.textMuted,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                        Icon(
+                          _simulateTunnelBlackout
+                              ? Icons.gps_off
+                              : (_simulateUrbanCanyon
+                                  ? Icons.location_city
+                                  : Icons.location_on),
+                          color: _simulateTunnelBlackout
+                              ? AppColors.error
+                              : (_simulateUrbanCanyon
+                                  ? AppColors.warning
+                                  : AppColors.cyan),
+                          size: 20,
                         ),
-                        Switch(
-                          value: _simulateTunnelBlackout,
-                          activeThumbColor: AppColors.error,
-                          onChanged: (val) {
-                            setState(() {
-                              _simulateTunnelBlackout = val;
-                              if (val) _blackoutDistanceTravelled = 0.0;
-                            });
-                          },
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _simulateTunnelBlackout
+                                    ? 'MODE: TUNNEL BLACKOUT (INS PROPAGATION)'
+                                    : (_simulateUrbanCanyon
+                                        ? 'MODE: URBAN CANYON (HIGH DOP EKF FUSION)'
+                                        : 'MODE: NOMINAL GNSS LOCK ACTIVE'),
+                                style: TextStyle(
+                                  color: _simulateTunnelBlackout
+                                      ? AppColors.error
+                                      : (_simulateUrbanCanyon
+                                          ? AppColors.warning
+                                          : AppColors.textPrimary),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                _simulateTunnelBlackout
+                                    ? 'Pure IMU DR: ${_blackoutDistanceTravelled.toStringAsFixed(1)}m travelled'
+                                    : (_simulateUrbanCanyon
+                                        ? 'Weak Satellites (DOP 4.8) • Fusing IMU + NavIC'
+                                        : 'Full Dual Frequency Multi-Constellation Fix'),
+                                style: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildModeChip(
+                            label: 'NOMINAL',
+                            isSelected: !_simulateTunnelBlackout && !_simulateUrbanCanyon,
+                            activeColor: AppColors.cyan,
+                            onTap: () {
+                              setState(() {
+                                _simulateTunnelBlackout = false;
+                                _simulateUrbanCanyon = false;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: _buildModeChip(
+                            label: 'URBAN CANYON',
+                            isSelected: _simulateUrbanCanyon,
+                            activeColor: AppColors.warning,
+                            onTap: () {
+                              setState(() {
+                                _simulateTunnelBlackout = false;
+                                _simulateUrbanCanyon = true;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: _buildModeChip(
+                            label: 'TUNNEL TEST',
+                            isSelected: _simulateTunnelBlackout,
+                            activeColor: AppColors.error,
+                            onTap: () {
+                              setState(() {
+                                _simulateTunnelBlackout = true;
+                                _simulateUrbanCanyon = false;
+                                _blackoutDistanceTravelled = 0.0;
+                              });
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -413,13 +474,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'MOUNT ALIGNMENT: Pitch $pitchDeg° | Roll $rollDeg°',
-                          style: const TextStyle(
-                            color: AppColors.cyan,
-                            fontSize: 10,
-                            fontFamily: 'monospace',
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            'MOUNT ALIGNMENT: Pitch $pitchDeg° | Roll $rollDeg°',
+                            style: const TextStyle(
+                              color: AppColors.cyan,
+                              fontSize: 10,
+                              fontFamily: 'monospace',
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Text(
@@ -484,8 +548,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     unit: '${_liveLon.toStringAsFixed(4)}°E',
                     subtitle: _simulateTunnelBlackout
                         ? 'AI DR (INS) Active'
-                        : (_hasGpsFix ? 'Real Hardware GPS Fix' : 'IMU Fix'),
-                    accentColor: _simulateTunnelBlackout ? AppColors.error : AppColors.gps,
+                        : (_simulateUrbanCanyon
+                            ? 'Urban Canyon EKF Fix'
+                            : (_hasGpsFix ? 'Real Hardware GPS Fix' : 'IMU Fix')),
+                    accentColor: _simulateTunnelBlackout
+                        ? AppColors.error
+                        : (_simulateUrbanCanyon ? AppColors.warning : AppColors.gps),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   TelemetryCard(
@@ -537,7 +605,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(color: AppColors.textMuted, fontSize: 11),
               ),
               const SizedBox(height: 12),
-              const SessionControls(),
+              SessionControls(
+                onTunnelTest: () {
+                  setState(() {
+                    _simulateTunnelBlackout = true;
+                    _simulateUrbanCanyon = false;
+                    _blackoutDistanceTravelled = 0.0;
+                  });
+                },
+                onUrbanCanyon: () {
+                  setState(() {
+                    _simulateTunnelBlackout = false;
+                    _simulateUrbanCanyon = true;
+                  });
+                },
+              ),
               const SizedBox(height: 16),
 
               // 6. Navigation Button
@@ -545,7 +627,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/session');
+                    final mode = _simulateTunnelBlackout
+                        ? FusionMode.deadReckoning
+                        : (_simulateUrbanCanyon
+                            ? FusionMode.gnssDegraded
+                            : (_hasGpsFix ? FusionMode.gnssLocked : FusionMode.deadReckoning));
+                    Navigator.pushNamed(context, '/session', arguments: mode);
                   },
                   icon: const Icon(Icons.play_arrow, color: AppColors.cyan),
                   label: const Text(
@@ -580,4 +667,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+  Widget _buildModeChip({
+    required String label,
+    required bool isSelected,
+    required Color activeColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withValues(alpha: 0.2) : AppColors.surface,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: isSelected ? activeColor : AppColors.surfaceBorder,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? activeColor : AppColors.textMuted,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
+

@@ -388,8 +388,12 @@ async def test_10_api_routes_end_to_end():
         async with test_factory() as session:
             yield session
 
+    from app.core.security import get_current_device
+    from app.models.device import Device
+
     app = create_app()
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_device] = lambda: Device(id="test-device-id", device_id_hash="dummy_hash", is_active=True)
 
     transport = httpx.ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:

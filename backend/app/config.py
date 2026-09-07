@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["*"]
     log_level: str = "INFO"
 
+    # Phase 7 Auth & JWT Environment Settings
+    jwt_secret: str | None = None
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 30
+    jwt_refresh_expire_minutes: int = 10080  # 7 days (10080 mins)
+    device_token_expire_minutes: int = 525600  # 1 year (525600 mins)
+
     model_config = SettingsConfigDict(env_file=".env", env_prefix="SIH_", extra="ignore")
 
 

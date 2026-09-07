@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.core.database import get_db
+from app.core.security import require_admin
 from app.schemas.model_schema import ModelDeleteResponse, ModelRollbackResponse, ModelVersionOut
 from app.services import model_registry_service
 from app.storage.object_storage_client import get_storage_client
@@ -28,9 +29,10 @@ async def upload_model(
     version: str = Form("1.0.0"),
     description: str | None = Form(None),
     set_active: bool = Form(True),
+    admin_user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ) -> ModelVersionOut:
-    """Upload and register a new TFLite model artifact in object storage and PostgreSQL metadata."""
+    """Upload and register a new TFLite model artifact (Admin privileges required)."""
     settings = get_settings()
     if not file.filename or not file.filename.lower().endswith(".tflite"):
         raise HTTPException(
@@ -64,7 +66,7 @@ async def latest_model(
     model_type: str = Query("speed", description="Model type identifier"),
     db: AsyncSession = Depends(get_db),
 ) -> ModelVersionOut:
-    """Query the currently active model version metadata for the given model_type."""
+    """Query the currently active model version metadata for the given model_type (Public)."""
     model = await model_registry_service.get_latest_active_model(db, model_type)
     if model is not None:
         return ModelVersionOut.model_validate(model)
@@ -95,7 +97,7 @@ async def download_model(
     identifier: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Download a model binary by its version ID or filename."""
+    """Download a model binary by its version ID or filename (Public)."""
     settings = get_settings()
     storage = get_storage_client(settings)
 
@@ -124,7 +126,7 @@ async def list_models(
     model_type: str | None = Query(None, description="Optional model type filter"),
     db: AsyncSession = Depends(get_db),
 ) -> list[ModelVersionOut]:
-    """List all registered model versions."""
+    """List all registered model versions (Public)."""
     models = await model_registry_service.list_models(db, model_type)
     return [ModelVersionOut.model_validate(m) for m in models]
 
@@ -132,9 +134,10 @@ async def list_models(
 @router.post("/{version_id}/rollback", response_model=ModelRollbackResponse)
 async def rollback_model(
     version_id: str,
+    admin_user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ) -> ModelRollbackResponse:
-    """Roll back / activate a previous model version atomically."""
+    """Roll back / activate a previous model version atomically (Admin privileges required)."""
     settings = get_settings()
     storage = get_storage_client(settings)
     active = await model_registry_service.rollback_model(db, storage, version_id)
@@ -147,9 +150,10 @@ async def rollback_model(
 @router.delete("/{version_id}", response_model=ModelDeleteResponse)
 async def delete_model(
     version_id: str,
+    admin_user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ) -> ModelDeleteResponse:
-    """Delete an inactive model version and its object storage binary."""
+    """Delete an inactive model version and its object storage binary (Admin privileges required)."""
     settings = get_settings()
     storage = get_storage_client(settings)
     await model_registry_service.delete_model(db, storage, version_id)
