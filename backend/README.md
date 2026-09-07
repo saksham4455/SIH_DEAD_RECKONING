@@ -33,12 +33,22 @@ The authoritative backend runtime is implemented in Python using FastAPI, struct
 
 ---
 
-## Current Architecture & State (Phase 1)
+## Database Architecture & State (Phase 2 Foundation)
 
-1. **In-Memory Store**: Telemetry points and session metadata currently run against an in-memory `TelemetryStore` for rapid development and testing. Data does not persist across application restarts.
-2. **Database Engine**: An async SQLite engine is initialized by default on startup (`sih_dead_reckoning.db`). PostgreSQL/PostGIS persistence, foreign key relationships, and Alembic migrations are scheduled for Phase 2.
-3. **Redis**: Redis client configuration is available in `core/redis_client.py`, but pub/sub telemetry broadcasting is deferred to Phase 4.
-4. **Authentication & Object Storage**: S3/MinIO cloud storage and JWT authentication are intentionally deferred to subsequent phases.
+1. **Target Relational Database**: PostgreSQL with PostGIS extension (`postgis/postgis:16-3.4`) is the authoritative relational database target.
+2. **Environment Configuration**: Database connection string is environment-driven via `SIH_DATABASE_URL` (defaulting to `postgresql+asyncpg://sih:sih@localhost:5432/sih` in `alembic.ini` and `postgresql+asyncpg://sih:sih@db:5432/sih` in `docker-compose.yml`). SQLite remains available for lightweight local mock runs, but the core schema and Alembic migrations target PostgreSQL/PostGIS.
+3. **Alembic Migrations**: Schema migrations are managed versioned via Alembic located in `backend/alembic/`. Automatic `Base.metadata.create_all()` has been removed from application startup and is no longer the schema management strategy.
+4. **Running Migrations**:
+   ```bash
+   # From backend/ directory:
+   alembic upgrade head
+   ```
+5. **Docker Compose Database**:
+   ```bash
+   # Start the PostGIS database container
+   docker compose up -d db
+   ```
+6. **Persistence Boundary**: Telemetry and session REST endpoints continue to use the in-memory `TelemetryStore` throughout Phase 2. Relational persistence for API endpoints will be connected in Phase 3.
 
 ---
 

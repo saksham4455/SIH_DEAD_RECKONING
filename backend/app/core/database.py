@@ -1,8 +1,14 @@
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from app.config import get_settings
 from app.models.base import Base
@@ -50,23 +56,41 @@ class TelemetryStore:
 
 _store = TelemetryStore()
 _engine: AsyncEngine | None = None
+_session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
 def get_store() -> TelemetryStore:
     return _store
 
 
-async def startup_db_client() -> TelemetryStore:
-    global _engine
+def get_engine() -> AsyncEngine:
+    global _engine, _session_factory
     if _engine is None:
         _engine = create_async_engine(get_settings().database_url, pool_pre_ping=True)
-        async with _engine.begin() as connection:
-            await connection.run_sync(Base.metadata.create_all)
+        _session_factory = async_sessionmaker(_engine, expire_on_commit=False)
+    return _engine
+
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """FastAPI dependency yielding an AsyncSession. Closes/releases upon completion."""
+    global _session_factory
+    if _session_factory is None:
+        get_engine()
+    assert _session_factory is not None
+    async with _session_factory() as session:
+        yield session
+
+
+async def startup_db_client() -> TelemetryStore:
+    """Initialize database engine without running create_all (managed via Alembic)."""
+    get_engine()
     return _store
 
 
 async def shutdown_db_client() -> None:
-    global _engine
+    """Dispose database engine on application shutdown."""
+    global _engine, _session_factory
     if _engine is not None:
         await _engine.dispose()
         _engine = None
+        _session_factory = None
