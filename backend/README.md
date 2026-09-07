@@ -55,10 +55,25 @@ The authoritative backend runtime is implemented in Python using FastAPI, struct
      python backend/scripts/seed_roads.py
      ```
    - Future Map-Matching Scope: Advanced spatial features such as nearest-road geometry lookup (`ST_Distance`/`ST_DWithin`), Hidden Markov Model (HMM) trajectory map matching, and turn-by-turn route planning will be built in subsequent phases.
-8. **Running with PostgreSQL & Redis**:
+8. **Phase 6 — Model Hub & S3/MinIO Object Storage**:
+   - Model hub with PostgreSQL metadata persistence (`model_versions` table) and S3-compatible object storage (MinIO for local development).
+   - Only valid `.tflite` models (verified via FlatBuffers `TFL3` magic header) are accepted.
+   - Enforces at most one active model per `model_type` at the database level via a partial unique index (`UNIQUE(model_type) WHERE is_active = true`).
+   - Atomic rollback: `POST /api/v1/models/{version_id}/rollback` deactivates the current version and activates the target version in a single database transaction.
+   - Delete protection: Active models cannot be deleted (`DELETE /api/v1/models/{version_id}` returns 400 Bad Request).
+   - Storage client (`backend/app/storage/object_storage_client.py`) uses `boto3` for MinIO/S3 and provides a configuration-controlled local filesystem fallback (`model_artifacts/`).
+   - Required environment variables:
+     ```bash
+     SIH_S3_ENDPOINT_URL=http://localhost:9000
+     SIH_S3_BUCKET=idr-models
+     SIH_S3_ACCESS_KEY=minioadmin
+     SIH_S3_SECRET_KEY=minioadmin
+     SIH_S3_REGION=us-east-1
+     ```
+9. **Running with PostgreSQL, Redis & MinIO**:
    ```bash
-   # Start the PostGIS database and Redis services
-   docker compose up -d db redis
+   # Start PostGIS, Redis, and MinIO services
+   docker compose up -d db cache minio
 
    # Run migrations
    alembic upgrade head
@@ -66,10 +81,16 @@ The authoritative backend runtime is implemented in Python using FastAPI, struct
    # Seed demo road network
    python backend/scripts/seed_roads.py
 
-   # Run backend with PostgreSQL and Redis connections
-   SIH_DATABASE_URL=postgresql+asyncpg://sih:sih@localhost:5432/sih SIH_REDIS_URL=redis://localhost:6379/0 uvicorn app.main:app --reload
+   # Run backend with PostgreSQL, Redis, and MinIO connections
+   SIH_DATABASE_URL=postgresql+asyncpg://sih:sih@localhost:5432/sih \
+   SIH_REDIS_URL=redis://localhost:6379/0 \
+   SIH_S3_ENDPOINT_URL=http://localhost:9000 \
+   SIH_S3_BUCKET=idr-models \
+   SIH_S3_ACCESS_KEY=minioadmin \
+   SIH_S3_SECRET_KEY=minioadmin \
+   uvicorn app.main:app --reload
    ```
-9. **Verification**: Full test suite can be verified with:
+10. **Verification**: Full test suite can be verified with:
    ```bash
    python -m pytest backend/tests/ -v
    ```

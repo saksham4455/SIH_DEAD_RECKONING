@@ -10,6 +10,13 @@ class Settings(BaseSettings):
     redis_url: str | None = None
     redis_telemetry_channel: str = "telemetry:live"
     model_directory: str = "model_artifacts"
+    s3_endpoint_url: str | None = None
+    s3_bucket: str = "idr-models"
+    s3_access_key: str | None = None
+    s3_secret_key: str | None = None
+    s3_region: str = "us-east-1"
+    max_model_upload_size_bytes: int = 50 * 1024 * 1024  # 50 MB
+    storage_backend: str = "auto"
     api_key: str | None = None
     cors_origins: list[str] = ["*"]
     log_level: str = "INFO"
