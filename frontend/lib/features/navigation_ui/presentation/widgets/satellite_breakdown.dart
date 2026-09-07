@@ -28,12 +28,18 @@ class SatelliteBreakdown extends StatelessWidget {
                       color: color, fontWeight: FontWeight.bold, fontSize: 13)),
             ],
           ),
-          Text(
-            '${info.count} Sats • ${info.signalStrength} dBHz',
-            style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontFamily: 'monospace',
-                fontSize: 12),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                '${info.count} Sats • ${info.signalStrength.toStringAsFixed(1)} dBHz',
+                style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontFamily: 'monospace',
+                    fontSize: 12),
+              ),
+            ),
           ),
         ],
       ),

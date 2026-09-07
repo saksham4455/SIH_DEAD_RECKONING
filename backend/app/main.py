@@ -31,6 +31,10 @@ def create_app() -> FastAPI:
     async def health() -> dict[str, str]:
         return {"status": "ok", "service": settings.app_name}
 
+    @application.get("/", tags=["system"])
+    async def root() -> dict[str, str]:
+        return {"message": f"Welcome to {settings.app_name} API", "docs": "/docs", "health": "/health"}
+
     return application
 
 

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Dead Reckoning — Device Client</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: -apple-system, system-ui, sans-serif; background:#0b0f14; color:#e6edf3; margin:0; padding:20px; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  p.sub { color:#8b949e; margin:0 0 20px; font-size:13px; }
+  button { font-size:16px; padding:14px 20px; border-radius:10px; border:none; width:100%; margin-bottom:10px; font-weight:600; cursor:pointer; }
+  #startBtn { background:#2ea043; color:white; }
+  #stopBtn { background:#da3633; color:white; }
+  #outageBtn { background:#30363d; color:#e6edf3; }
+  button:disabled { opacity:0.4; cursor:not-allowed; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+  .card { background:#161b22; border:1px solid #30363d; border-radius:10px; padding:12px; }
+  .card .label { font-size:11px; color:#8b949e; text-transform:uppercase; letter-spacing:.04em; }
+  .card .value { font-size:20px; font-weight:700; margin-top:4px; }
+  #log { margin-top:16px; background:#161b22; border:1px solid #30363d; border-radius:10px; padding:10px; font-size:12px; color:#8b949e; max-height:160px; overflow-y:auto; white-space:pre-wrap; }
+  #statusDot { display:inline-block; width:9px; height:9px; border-radius:50%; background:#da3633; margin-right:6px; }
+  #statusDot.live { background:#2ea043; }
+  label.field { display:block; font-size:12px; color:#8b949e; margin:10px 0 4px; }
+  input[type=text] { width:100%; box-sizing:border-box; background:#161b22; border:1px solid #30363d; color:#e6edf3; padding:10px; border-radius:8px; font-size:14px; }
+</style>
+</head>
+<body>
+  <h1><span id="statusDot"></span>Dead Reckoning Device Client</h1>
+  <p class="sub">Streams this device's real accelerometer, gyroscope, and GPS to the fusion backend over WebSocket. Open this page on a phone for genuine sensor data.</p>
+
+  <label class="field" for="wsUrl">Backend WebSocket URL</label>
+  <input type="text" id="wsUrl" />
+
+  <div style="margin-top:14px;">
+    <button id="startBtn">Start Session</button>
+    <button id="outageBtn" disabled>Simulate GNSS Outage: OFF</button>
+    <button id="stopBtn" disabled>Stop Session</button>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="label">Fusion Mode</div><div class="value" id="fusionMode">—</div></div>
+    <div class="card"><div class="label">Confidence</div><div class="value" id="confidence">—</div></div>
+    <div class="card"><div class="label">Speed (m/s)</div><div class="value" id="speed">—</div></div>
+    <div class="card"><div class="label">Heading (°)</div><div class="value" id="heading">—</div></div>
+    <div class="card"><div class="label">Lat</div><div class="value" id="lat">—</div></div>
+    <div class="card"><div class="label">Lon</div><div class="value" id="lon">—</div></div>
+    <div class="card"><div class="label">Anomalies</div><div class="value" id="anomalies">0</div></div>
+    <div class="card"><div class="label">GNSS Age (ms)</div><div class="value" id="gnssAge">—</div></div>
+  </div>
+
+  <div id="log"></div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const wsUrlInput = $('wsUrl');
+  wsUrlInput.value = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+
+  let ws = null;
+  let sessionId = null;
+  let outageEnabled = false;
+  let anomalyCount = 0;
+  let watchId = null;
+  let lastMotionSent = 0;
+  const MOTION_MIN_INTERVAL_MS = 40; // cap ~25Hz upstream; adjust for your link/backend load
+
+  function log(msg) {
+    const el = $('log');
+    const line = document.createElement('div');
+    line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+    el.prepend(line);
+  }
+
+  function setLive(isLive) {
+    $('statusDot').className = isLive ? 'live' : '';
+  }
+
+  function renderSnapshot(s) {
+    $('fusionMode').textContent = s.fusionMode;
+    $('confidence').textContent = s.aiInference.confidenceScore + '%';
+    $('speed').textContent = s.vehicleState.speedMps.toFixed(2);
+    $('heading').textContent = s.vehicleState.headingDeg.toFixed(0);
+    $('lat').textContent = s.vehicleState.latitude.toFixed(6);
+    $('lon').textContent = s.vehicleState.longitude.toFixed(6);
+    $('gnssAge').textContent = s.msSinceLastGnssFix === null ? '—' : Math.round(s.msSinceLastGnssFix);
+  }
+
+  async function requestMotionPermission() {
+    // iOS 13+ requires an explicit user-gesture permission prompt for motion sensors.
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      const result = await DeviceMotionEvent.requestPermission();
+      if (result !== 'granted') throw new Error('Motion sensor permission denied');
+    }
+  }
+
+  function sendMessage(payload) {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(payload));
+  }
+
+  function onDeviceMotion(event) {
+    const now = Date.now();
+    if (now - lastMotionSent < MOTION_MIN_INTERVAL_MS) return;
+    lastMotionSent = now;
+
+    // devicemotion gives acceleration WITH gravity (accelerationIncludingGravity)
+    // in the device's own frame, and rotationRate in deg/s — convert to the
+    // ImuSample shape the backend expects (accel m/s^2 incl. gravity, gyro rad/s).
+    const acc = event.accelerationIncludingGravity || event.acceleration || { x: 0, y: 0, z: 9.81 };
+    const rot = event.rotationRate || { alpha: 0, beta: 0, gamma: 0 };
+    const degToRad = Math.PI / 180;
+
+    sendMessage({
+      type: 'imu',
+      data: {
+        timestamp: now,
+        accel: { x: acc.x || 0, y: acc.y || 0, z: acc.z || 9.81 },
+        gyro: {
+          x: (rot.beta || 0) * degToRad,
+          y: (rot.gamma || 0) * degToRad,
+          z: (rot.alpha || 0) * degToRad,
+        },
+        temperatureC: null, // browsers don't expose IMU die temperature; engine runs open-loop thermal comp
+      },
+    });
+  }
+
+  function onPosition(pos) {
+    const c = pos.coords;
+    // The browser Geolocation API doesn't expose a satellite breakdown, so we
+    // synthesize a single-constellation entry sized by reported accuracy —
+    // enough to drive the fusion math faithfully, just without real SV data.
+    // A native app talking to the OS's raw GNSS APIs (Android GnssStatus /
+    // iOS CoreLocation) can send genuine per-satellite constellation/SNR data.
+    const approxHdop = Math.min(10, Math.max(0.8, c.accuracy / 5));
+    sendMessage({
+      type: 'gnss',
+      data: {
+        timestamp: pos.timestamp || Date.now(),
+        latitude: c.latitude,
+        longitude: c.longitude,
+        altitude: c.altitude ?? undefined,
+        speedMps: c.speed ?? undefined,
+        bearingDeg: c.heading ?? undefined,
+        hdop: approxHdop,
+        satellites: [
+          { constellation: 'OTHER', snrDbHz: 35, usedInFix: true },
+          { constellation: 'OTHER', snrDbHz: 33, usedInFix: true },
+          { constellation: 'OTHER', snrDbHz: 30, usedInFix: true },
+          { constellation: 'OTHER', snrDbHz: 28, usedInFix: true },
+          { constellation: 'OTHER', snrDbHz: 25, usedInFix: true },
+        ],
+      },
+    });
+  }
+
+  async function start() {
+    $('startBtn').disabled = true;
+    try {
+      await requestMotionPermission();
+
+      ws = new WebSocket(wsUrlInput.value);
+      ws.onopen = () => {
+        log('WebSocket connected');
+        ws.send(JSON.stringify({ type: 'start_session' }));
+      };
+      ws.onclose = () => { setLive(false); log('WebSocket closed'); };
+      ws.onerror = () => log('WebSocket error');
+      ws.onmessage = (evt) => {
+        const msg = JSON.parse(evt.data);
+        if (msg.type === 'session_started') {
+          sessionId = msg.sessionId;
+          setLive(true);
+          log('Session started: ' + sessionId);
+          window.addEventListener('devicemotion', onDeviceMotion);
+          watchId = navigator.geolocation.watchPosition(onPosition, (err) => log('GPS error: ' + err.message), {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 15000,
+          });
+          $('stopBtn').disabled = false;
+          $('outageBtn').disabled = false;
+        } else if (msg.type === 'diagnostics') {
+          renderSnapshot(msg.data);
+        } else if (msg.type === 'anomaly') {
+          anomalyCount += 1;
+          $('anomalies').textContent = anomalyCount;
+          log('Anomaly detected: ' + msg.data.severity + ' @ ' + msg.data.timestamp);
+        } else if (msg.type === 'session_stopped') {
+          log('Session stopped — distance ' + msg.data.distanceMeters + 'm, anomalies ' + msg.data.anomalyCount);
+        } else if (msg.type === 'error') {
+          log('Server error: ' + msg.message);
+        }
+      };
+    } catch (err) {
+      log('Failed to start: ' + err.message);
+      $('startBtn').disabled = false;
+    }
+  }
+
+  function stop() {
+    sendMessage({ type: 'stop_session' });
+    window.removeEventListener('devicemotion', onDeviceMotion);
+    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+    if (ws) ws.close();
+    setLive(false);
+    $('startBtn').disabled = false;
+    $('stopBtn').disabled = true;
+    $('outageBtn').disabled = true;
+  }
+
+  function toggleOutage() {
+    outageEnabled = !outageEnabled;
+    sendMessage({ type: 'simulate_outage', enabled: outageEnabled });
+    $('outageBtn').textContent = 'Simulate GNSS Outage: ' + (outageEnabled ? 'ON' : 'OFF');
+  }
+
+  $('startBtn').addEventListener('click', start);
+  $('stopBtn').addEventListener('click', stop);
+  $('outageBtn').addEventListener('click', toggleOutage);
+})();
+</script>
+</body>
+</html>

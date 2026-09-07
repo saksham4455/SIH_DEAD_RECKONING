@@ -40,31 +40,35 @@ class TelemetryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: accentColor,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'monospace',
-                  ),
-                ),
-                if (unit != null) ...[
-                  const SizedBox(width: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
                   Text(
-                    unit!,
+                    value,
                     style: TextStyle(
-                      color: accentColor.withValues(alpha: 0.8),
-                      fontSize: 12,
+                      color: accentColor,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
+                      fontFamily: 'monospace',
                     ),
                   ),
+                  if (unit != null) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      unit!,
+                      style: TextStyle(
+                        color: accentColor.withValues(alpha: 0.8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
             if (subtitle != null) ...[
               const SizedBox(height: 4),

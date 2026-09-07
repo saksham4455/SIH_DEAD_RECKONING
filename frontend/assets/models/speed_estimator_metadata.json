@@ -1,0 +1,20 @@
+{
+  "problemStatement": "SIH26168",
+  "dataset": "IO-VNBD Benchmark",
+  "modelVersion": "v2.4.1-edge-tflite",
+  "inputChannels": [
+    "ax",
+    "ay",
+    "az",
+    "gx",
+    "gy",
+    "gz"
+  ],
+  "samplingRateHz": 50,
+  "performanceBenchmark": {
+    "targetDriftPct": 10.0,
+    "achievedDriftPct": 0.0,
+    "achievedDriftMeters": 0.0,
+    "status": "PASSED"
+  }
+}

@@ -24,14 +24,17 @@ class AiInferencePanel extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'EDGE AI SPEED ESTIMATOR & ODOMETRY',
-                style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.8),
+              const Expanded(
+                child: Text(
+                  'EDGE AI SPEED ESTIMATOR & ODOMETRY',
+                  style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.8),
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(

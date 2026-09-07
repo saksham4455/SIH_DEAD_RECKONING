@@ -34,13 +34,17 @@ class ThermalCompensationCard extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text(
-                  '${thermalState.temperature}°C  (Bias: ${thermalState.biasCorrection})',
-                  style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'monospace'),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${thermalState.temperature.toStringAsFixed(1)}°C  (Bias: ${thermalState.biasCorrection.toStringAsFixed(4)})',
+                    style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'monospace'),
+                  ),
                 ),
               ],
             ),
