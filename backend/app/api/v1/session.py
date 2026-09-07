@@ -30,7 +30,7 @@ async def stop_session(session_id: str, database: TelemetryStore = Depends(store
 
 @router.get("/{session_id}/summary", response_model=SessionSummary)
 async def session_summary(session_id: str, database: TelemetryStore = Depends(store)) -> SessionSummary:
-    session = database.sessions.get(session_id)
+    session = await database.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session was not found")
     records = await database.get_telemetry(session_id)

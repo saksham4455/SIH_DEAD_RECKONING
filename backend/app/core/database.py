@@ -41,6 +41,12 @@ class TelemetryStore:
     async def get_telemetry(self, session_id: str) -> list[dict[str, Any]]:
         return self.telemetry.get(session_id, [])
 
+    async def get_session(self, session_id: str) -> dict[str, Any] | None:
+        return self.sessions.get(session_id)
+
+    async def session_exists(self, session_id: str) -> bool:
+        return session_id in self.sessions
+
 
 _store = TelemetryStore()
 _engine: AsyncEngine | None = None

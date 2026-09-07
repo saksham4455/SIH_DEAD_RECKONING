@@ -1,10 +1,14 @@
-# SIH Dead Reckoning — Backend
+# SIH Dead Reckoning — Reference Backend (`backend/backend/`)
 
-Real-time GNSS/IMU sensor-fusion backend for the [SIH_DEAD_RECKONING](https://github.com/saksham4455/SIH_DEAD_RECKONING)
+> [!NOTE]
+> **SECONDARY / REFERENCE IMPLEMENTATION NOTICE**
+> This TypeScript/Node.js implementation is preserved as an algorithmic reference (EKF, sensor-fusion mathematics, anomaly detection) and test bed.
+> The **authoritative project backend** is the Python FastAPI service located at `backend/app/` (configured in root `docker-compose.yml` and `Makefile`).
+
+Real-time GNSS/IMU sensor-fusion backend reference for the [SIH_DEAD_RECKONING](https://github.com/saksham4455/SIH_DEAD_RECKONING)
 frontend. Ingests raw device sensor data over WebSocket, runs it through an
 Extended Kalman Filter (dead reckoning + GNSS fusion), and streams back
-diagnostics the mobile app can render directly — matching the `types/navigation.ts`
-shapes already used on the frontend.
+diagnostics matching the `types/navigation.ts` shapes.
 
 ## 📁 Backend Architecture
 

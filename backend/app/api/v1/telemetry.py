@@ -15,13 +15,14 @@ def store() -> TelemetryStore:
 
 @router.post("", response_model=TelemetryOut, status_code=status.HTTP_201_CREATED)
 async def ingest_telemetry(payload: TelemetryIn, request: Request, database: TelemetryStore = Depends(store)) -> TelemetryOut:
-    if payload.session_id not in database.sessions:
+    if not await database.session_exists(payload.session_id):
         raise HTTPException(status_code=404, detail="Session was not found")
     record = payload.model_dump()
     record["received_at"] = datetime.now(timezone.utc)
     await database.add_telemetry(payload.session_id, record)
-    manager: ConnectionManager = request.app.state.ws_manager
-    await manager.broadcast(record)
+    manager: ConnectionManager | None = getattr(request.app.state, "ws_manager", None)
+    if manager is not None:
+        await manager.broadcast(record)
     return TelemetryOut(**record)
 
 
@@ -35,6 +36,6 @@ async def ingest_telemetry_batch(payload: TelemetryBatch, request: Request, data
 
 @router.get("/session/{session_id}", response_model=list[TelemetryOut])
 async def get_session_telemetry(session_id: str, database: TelemetryStore = Depends(store)) -> list[TelemetryOut]:
-    if session_id not in database.sessions:
+    if not await database.session_exists(session_id):
         raise HTTPException(status_code=404, detail="Session was not found")
     return [TelemetryOut(**record) for record in await database.get_telemetry(session_id)]

@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     model_directory: str = "model_artifacts"
     api_key: str | None = None
     cors_origins: list[str] = ["*"]
+    log_level: str = "INFO"
 
     model_config = SettingsConfigDict(env_file=".env", env_prefix="SIH_", extra="ignore")
 
