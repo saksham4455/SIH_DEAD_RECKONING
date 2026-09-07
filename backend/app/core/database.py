@@ -3,12 +3,25 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
+from geoalchemy2 import Geometry
+from geoalchemy2.admin.dialects import sqlite as geo_sqlite
+from sqlalchemy import event
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
+
+# Enable seamless SQLite local dev fallback without SpatiaLite C extensions
+geo_sqlite.before_create = lambda *a, **k: None
+geo_sqlite.after_create = lambda *a, **k: None
+
+@compiles(Geometry, "sqlite")
+def compile_geom_sqlite(type_, compiler, **kw):
+    return "TEXT"
+
 
 from app.config import get_settings
 from app.models.base import Base
@@ -17,8 +30,14 @@ from app.models import DriveSession, RoadNetwork, TelemetryRecord
 
 @dataclass
 class TelemetryStore:
+    """In-memory telemetry store retained strictly for mock/compatibility fallback.
+
+    Operational persistence for sessions and telemetry has been fully migrated to
+    PostgreSQL/PostGIS via AsyncSession, get_db, and service layers.
+    """
     sessions: dict[str, dict[str, Any]] = field(default_factory=dict)
     telemetry: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
+
 
     async def start_session(self, session_id: str, metadata: dict[str, Any]) -> dict[str, Any]:
         session = {
@@ -66,9 +85,43 @@ def get_store() -> TelemetryStore:
 def get_engine() -> AsyncEngine:
     global _engine, _session_factory
     if _engine is None:
-        _engine = create_async_engine(get_settings().database_url, pool_pre_ping=True)
+        db_url = get_settings().database_url
+        _engine = create_async_engine(db_url, pool_pre_ping=True)
+        if "sqlite" in db_url:
+            @event.listens_for(_engine.sync_engine, "connect")
+            def _set_sqlite_udfs(dbapi_conn, record):
+                def _to_ewkb(val):
+                    if not val:
+                        return val
+                    try:
+                        from shapely import wkt, wkb
+                        val_str = str(val)
+                        if ";" in val_str:
+                            val_str = val_str.split(";")[-1]
+                        return wkb.dumps(wkt.loads(val_str), srid=4326, hex=True)
+                    except Exception:
+                        return val
+
+                try:
+                    dbapi_conn.execute("PRAGMA foreign_keys=ON")
+                    dbapi_conn.create_function("GeomFromEWKT", 1, lambda val: val)
+                    dbapi_conn.create_function("ST_GeomFromEWKT", 1, lambda val: val)
+                    dbapi_conn.create_function("AsEWKB", 1, _to_ewkb)
+                    dbapi_conn.create_function("ST_AsEWKB", 1, _to_ewkb)
+                    dbapi_conn.create_function("AsBinary", 1, _to_ewkb)
+                    dbapi_conn.create_function("ST_AsBinary", 1, _to_ewkb)
+                    dbapi_conn.create_function("RecoverGeometryColumn", 5, lambda *args: 1)
+                    dbapi_conn.create_function("CreateSpatialIndex", 2, lambda *args: 1)
+                    dbapi_conn.create_function("DisableSpatialIndex", 2, lambda *args: 1)
+                    dbapi_conn.create_function("InitSpatialMetaData", 0, lambda: 1)
+                    dbapi_conn.create_function("InitSpatialMetaData", 1, lambda val: 1)
+                except Exception:
+                    pass
+
+
         _session_factory = async_sessionmaker(_engine, expire_on_commit=False)
     return _engine
+
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

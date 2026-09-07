@@ -33,22 +33,32 @@ The authoritative backend runtime is implemented in Python using FastAPI, struct
 
 ---
 
-## Database Architecture & State (Phase 2 Foundation)
+## Persistence Architecture & State (Phase 3 Complete)
 
-1. **Target Relational Database**: PostgreSQL with PostGIS extension (`postgis/postgis:16-3.4`) is the authoritative relational database target.
-2. **Environment Configuration**: Database connection string is environment-driven via `SIH_DATABASE_URL` (defaulting to `postgresql+asyncpg://sih:sih@localhost:5432/sih` in `alembic.ini` and `postgresql+asyncpg://sih:sih@db:5432/sih` in `docker-compose.yml`). SQLite remains available for lightweight local mock runs, but the core schema and Alembic migrations target PostgreSQL/PostGIS.
-3. **Alembic Migrations**: Schema migrations are managed versioned via Alembic located in `backend/alembic/`. Automatic `Base.metadata.create_all()` has been removed from application startup and is no longer the schema management strategy.
-4. **Running Migrations**:
+1. **Authoritative Persistence**: PostgreSQL with PostGIS extension (`postgis/postgis:16-3.4`) is the authoritative production database. Operational session management (`/api/v1/session/*`) and telemetry ingestion/retrieval (`/api/v1/telemetry/*`) are fully persisted using SQLAlchemy 2.0 and `AsyncSession`.
+2. **Session Persistence**: Sessions (`DriveSession`) are created via `POST /api/v1/session/start` with a stable UUID primary key, `started_at` timestamp, and `active` status. Sessions are stopped via `POST /api/v1/session/{id}/stop`, updating `stopped_at` and `status='stopped'`.
+3. **Telemetry Persistence & Geometry**: `TelemetryRecord` rows are inserted with relational foreign keys (`session_id` -> `drive_sessions.id` on delete cascade). PostGIS geometry (`POINT(longitude latitude)` with SRID 4326) is constructed and persisted for every record.
+4. **Batch Transactions**: `POST /api/v1/telemetry/batch` verifies all referenced session IDs upfront and commits all telemetry records within a single database transaction.
+5. **Ordered Retrieval & Summaries**: `GET /api/v1/telemetry/session/{id}` returns telemetry records strictly ordered by `timestamp ASC`. `GET /api/v1/session/{id}/summary` computes drift statistics (RMSE, MAE, drift %) directly from persisted records using `drift_analyzer`.
+6. **TelemetryStore Status**: The in-memory `TelemetryStore` is removed from all operational REST routes and services. It is retained only as an internal fallback/mock fixture in `core/database.py` and is no longer part of active request execution.
+7. **WebSocket Integration**: Live dashboard broadcasts via `ConnectionManager` are preserved during ingestion.
+8. **Running with PostgreSQL**:
    ```bash
-   # From backend/ directory:
-   alembic upgrade head
-   ```
-5. **Docker Compose Database**:
-   ```bash
-   # Start the PostGIS database container
+   # Start the PostGIS database service
    docker compose up -d db
+
+   # Run migrations
+   alembic upgrade head
+
+   # Run backend with PostgreSQL connection
+   SIH_DATABASE_URL=postgresql+asyncpg://sih:sih@localhost:5432/sih uvicorn app.main:app --reload
    ```
-6. **Persistence Boundary**: Telemetry and session REST endpoints continue to use the in-memory `TelemetryStore` throughout Phase 2. Relational persistence for API endpoints will be connected in Phase 3.
+9. **Verification**: Persistence behavior can be verified using the test suite:
+   ```bash
+   python -m pytest backend/tests/test_persistence.py -v
+   ```
+10. **Phase 4 Horizon**: Telemetry ingestion and storage is fully operational. Redis pub/sub broadcasting, caching, and real-time streaming are deferred to Phase 4.
+
 
 ---
 
