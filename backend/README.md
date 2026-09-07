@@ -33,31 +33,46 @@ The authoritative backend runtime is implemented in Python using FastAPI, struct
 
 ---
 
-## Persistence Architecture & State (Phase 3 Complete)
+## Persistence & Spatial Architecture (Phases 3, 4 & 5 Complete)
 
 1. **Authoritative Persistence**: PostgreSQL with PostGIS extension (`postgis/postgis:16-3.4`) is the authoritative production database. Operational session management (`/api/v1/session/*`) and telemetry ingestion/retrieval (`/api/v1/telemetry/*`) are fully persisted using SQLAlchemy 2.0 and `AsyncSession`.
 2. **Session Persistence**: Sessions (`DriveSession`) are created via `POST /api/v1/session/start` with a stable UUID primary key, `started_at` timestamp, and `active` status. Sessions are stopped via `POST /api/v1/session/{id}/stop`, updating `stopped_at` and `status='stopped'`.
 3. **Telemetry Persistence & Geometry**: `TelemetryRecord` rows are inserted with relational foreign keys (`session_id` -> `drive_sessions.id` on delete cascade). PostGIS geometry (`POINT(longitude latitude)` with SRID 4326) is constructed and persisted for every record.
 4. **Batch Transactions**: `POST /api/v1/telemetry/batch` verifies all referenced session IDs upfront and commits all telemetry records within a single database transaction.
 5. **Ordered Retrieval & Summaries**: `GET /api/v1/telemetry/session/{id}` returns telemetry records strictly ordered by `timestamp ASC`. `GET /api/v1/session/{id}/summary` computes drift statistics (RMSE, MAE, drift %) directly from persisted records using `drift_analyzer`.
-6. **TelemetryStore Status**: The in-memory `TelemetryStore` is removed from all operational REST routes and services. It is retained only as an internal fallback/mock fixture in `core/database.py` and is no longer part of active request execution.
-7. **WebSocket Integration**: Live dashboard broadcasts via `ConnectionManager` are preserved during ingestion.
-8. **Running with PostgreSQL**:
+6. **Phase 4 — Redis Real-Time Telemetry**:
+   - Redis Pub/Sub (`telemetry:live`) serves as the auxiliary real-time event transport.
+   - Flow: Ingest Telemetry -> PostgreSQL Commit -> Redis Publish -> Background Subscriber -> WebSocket (`/ws/judge-dashboard`).
+   - Single-broadcast guarantee: Direct broadcast from route is disabled when Redis is active to prevent duplicates.
+   - Redis failure isolation: Failures during publish never roll back or fail PostgreSQL telemetry persistence.
+7. **Phase 5 — PostGIS Map & Spatial Queries**:
+   - Runtime road querying via `GET /api/v1/maps/corridor` is fully migrated to PostGIS.
+   - Bounding-box queries use `ST_MakeEnvelope(min_lon, min_lat, max_lon, max_lat, 4326)` and `ST_Intersects(road_networks.geom, envelope)` using the existing GIST spatial index (`idx_road_networks_geom`).
+   - Road geometry uses `MULTILINESTRING` with SRID 4326 and strict `(X=longitude, Y=latitude)` coordinate order.
+   - Static JSON (`maps/demo-region/roads.json`) is strictly decoupled from request execution and is no longer read during runtime API requests.
+   - Seeding demo roads into PostGIS:
+     ```bash
+     python backend/scripts/seed_roads.py
+     ```
+   - Future Map-Matching Scope: Advanced spatial features such as nearest-road geometry lookup (`ST_Distance`/`ST_DWithin`), Hidden Markov Model (HMM) trajectory map matching, and turn-by-turn route planning will be built in subsequent phases.
+8. **Running with PostgreSQL & Redis**:
    ```bash
-   # Start the PostGIS database service
-   docker compose up -d db
+   # Start the PostGIS database and Redis services
+   docker compose up -d db redis
 
    # Run migrations
    alembic upgrade head
 
-   # Run backend with PostgreSQL connection
-   SIH_DATABASE_URL=postgresql+asyncpg://sih:sih@localhost:5432/sih uvicorn app.main:app --reload
+   # Seed demo road network
+   python backend/scripts/seed_roads.py
+
+   # Run backend with PostgreSQL and Redis connections
+   SIH_DATABASE_URL=postgresql+asyncpg://sih:sih@localhost:5432/sih SIH_REDIS_URL=redis://localhost:6379/0 uvicorn app.main:app --reload
    ```
-9. **Verification**: Persistence behavior can be verified using the test suite:
+9. **Verification**: Full test suite can be verified with:
    ```bash
-   python -m pytest backend/tests/test_persistence.py -v
+   python -m pytest backend/tests/ -v
    ```
-10. **Phase 4 Horizon**: Telemetry ingestion and storage is fully operational. Redis pub/sub broadcasting, caching, and real-time streaming are deferred to Phase 4.
 
 
 ---
