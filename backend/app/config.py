@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     database_url: str = "sqlite+aiosqlite:///./sih_dead_reckoning.db"
     redis_url: str | None = None
+    redis_telemetry_channel: str = "telemetry:live"
     model_directory: str = "model_artifacts"
     api_key: str | None = None
     cors_origins: list[str] = ["*"]
