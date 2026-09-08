@@ -102,10 +102,8 @@ class _NavigationMapState extends State<NavigationMap> {
                       point: currentPos,
                       width: 54,
                       height: 54,
-                      child: AnimatedRotation(
-                        turns: widget.navigationState.heading / 360.0,
-                        duration: const Duration(milliseconds: 50),
-                        curve: Curves.easeOut,
+                      child: Transform.rotate(
+                        angle: widget.navigationState.heading * pi / 180,
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
@@ -148,7 +146,7 @@ class _NavigationMapState extends State<NavigationMap> {
                     Icon(Icons.map_outlined, size: 13, color: AppColors.cyan),
                     SizedBox(width: 5),
                     Text(
-                      'OFFLINE MAP // TACTICAL VECTOR',
+                      'NORTHERN INDIA OSM // POSTGIS FUSED',
                       style: TextStyle(
                         color: AppColors.cyan,
                         fontSize: 10,

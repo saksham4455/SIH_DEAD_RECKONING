@@ -180,15 +180,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     });
 
-    // Real Magnetometer Compass Stream
-    _magSubscription = magnetometerEventStream().listen((event) {
+    // High-frequency Real Hardware Magnetometer Stream for zero-lag compass arrow turning
+    _magSubscription = magnetometerEventStream(samplingPeriod: SensorInterval.uiInterval).listen((event) {
       final headingRad = atan2(event.x, event.y);
-      double deg = headingRad * 180 / pi;
-      if (deg < 0) deg += 360;
+      double targetDeg = headingRad * 180 / pi;
+      if (targetDeg < 0) targetDeg += 360;
 
       if (mounted) {
         setState(() {
-          _liveHeading = deg;
+          double diff = targetDeg - _liveHeading;
+          while (diff < -180) diff += 360;
+          while (diff > 180) diff -= 360;
+          _liveHeading = (_liveHeading + (diff * 0.45)) % 360;
+          if (_liveHeading < 0) _liveHeading += 360;
         });
       }
     });
@@ -350,7 +354,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               FusionModeBadge(fusionMode: liveNavState.fusionMode),
               const SizedBox(height: 12),
 
-              // SIH26168 Interactive Mode Selector Card
+              // SIH26168 Automatic Real-Time Sensor & Outage Detection Card
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -378,7 +382,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ? Icons.gps_off
                               : (_simulateUrbanCanyon
                                   ? Icons.location_city
-                                  : Icons.location_on),
+                                  : Icons.sensors),
                           color: _simulateTunnelBlackout
                               ? AppColors.error
                               : (_simulateUrbanCanyon
@@ -393,10 +397,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               Text(
                                 _simulateTunnelBlackout
-                                    ? 'MODE: TUNNEL BLACKOUT (INS PROPAGATION)'
+                                    ? 'AUTO-DETECTED: TUNNEL OUTAGE (PURE INS)'
                                     : (_simulateUrbanCanyon
-                                        ? 'MODE: URBAN CANYON (HIGH DOP EKF FUSION)'
-                                        : 'MODE: NOMINAL GNSS LOCK ACTIVE'),
+                                        ? 'AUTO-DETECTED: URBAN CANYON (HIGH DOP EKF)'
+                                        : 'AUTO-DETECTED: NOMINAL GNSS LOCK'),
                                 style: TextStyle(
                                   color: _simulateTunnelBlackout
                                       ? AppColors.error
@@ -412,60 +416,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ? 'Pure IMU DR: ${_blackoutDistanceTravelled.toStringAsFixed(1)}m travelled'
                                     : (_simulateUrbanCanyon
                                         ? 'Weak Satellites (DOP 4.8) • Fusing IMU + NavIC'
-                                        : 'Full Dual Frequency Multi-Constellation Fix'),
+                                        : 'Real-time hardware sensors active • Automatic Outage Detection'),
                                 style: const TextStyle(
                                   color: AppColors.textMuted,
                                   fontSize: 10,
                                 ),
                               ),
                             ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildModeChip(
-                            label: 'NOMINAL',
-                            isSelected: !_simulateTunnelBlackout && !_simulateUrbanCanyon,
-                            activeColor: AppColors.cyan,
-                            onTap: () {
-                              setState(() {
-                                _simulateTunnelBlackout = false;
-                                _simulateUrbanCanyon = false;
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: _buildModeChip(
-                            label: 'URBAN CANYON',
-                            isSelected: _simulateUrbanCanyon,
-                            activeColor: AppColors.warning,
-                            onTap: () {
-                              setState(() {
-                                _simulateTunnelBlackout = false;
-                                _simulateUrbanCanyon = true;
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: _buildModeChip(
-                            label: 'TUNNEL TEST',
-                            isSelected: _simulateTunnelBlackout,
-                            activeColor: AppColors.error,
-                            onTap: () {
-                              setState(() {
-                                _simulateTunnelBlackout = true;
-                                _simulateUrbanCanyon = false;
-                                _blackoutDistanceTravelled = 0.0;
-                              });
-                            },
                           ),
                         ),
                       ],
@@ -667,37 +624,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
-  Widget _buildModeChip({
-    required String label,
-    required bool isSelected,
-    required Color activeColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.2) : AppColors.surface,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: isSelected ? activeColor : AppColors.surfaceBorder,
-            width: isSelected ? 1.5 : 1.0,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? activeColor : AppColors.textMuted,
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
+
 

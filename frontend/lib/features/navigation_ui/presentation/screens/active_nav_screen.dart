@@ -180,15 +180,19 @@ class _NavigationScreenState extends State<NavigationScreen> {
       }
     });
 
-    // Real Magnetometer stream for instant 1-to-1 compass turning
-    _magSubscription = magnetometerEventStream().listen((event) {
+    // High-frequency Real Hardware Magnetometer Stream for zero-lag compass arrow turning
+    _magSubscription = magnetometerEventStream(samplingPeriod: SensorInterval.uiInterval).listen((event) {
       final headingRad = atan2(event.x, event.y);
-      double deg = headingRad * 180 / pi;
-      if (deg < 0) deg += 360;
+      double targetDeg = headingRad * 180 / pi;
+      if (targetDeg < 0) targetDeg += 360;
 
       if (mounted) {
         setState(() {
-          _liveHeading = deg;
+          double diff = targetDeg - _liveHeading;
+          while (diff < -180) diff += 360;
+          while (diff > 180) diff -= 360;
+          _liveHeading = (_liveHeading + (diff * 0.45)) % 360;
+          if (_liveHeading < 0) _liveHeading += 360;
         });
       }
     });
@@ -251,7 +255,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
               FusionModeBadge(fusionMode: liveNavState.fusionMode),
               const SizedBox(height: 10),
 
-              // Interactive Mode Selector Chips & Banner
+              // Automatic Real-Time Navigation Status Banner
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
@@ -270,106 +274,55 @@ class _NavigationScreenState extends State<NavigationScreen> {
                     width: 1.5,
                   ),
                 ),
-                child: Column(
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          _simulateTunnelBlackout
-                              ? Icons.gps_off
-                              : (_simulateUrbanCanyon
-                                  ? Icons.location_city
-                                  : Icons.location_on),
-                          color: _simulateTunnelBlackout
-                              ? AppColors.error
-                              : (_simulateUrbanCanyon
-                                  ? AppColors.warning
-                                  : AppColors.cyan),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _simulateTunnelBlackout
-                                    ? 'TUNNEL BLACKOUT TEST (PURE INS)'
-                                    : (_simulateUrbanCanyon
-                                        ? 'URBAN CANYON MULTIPATH (EKF FUSION)'
-                                        : 'NOMINAL GNSS LOCK ACTIVE'),
-                                style: TextStyle(
-                                  color: _simulateTunnelBlackout
-                                      ? AppColors.error
-                                      : (_simulateUrbanCanyon
-                                          ? AppColors.warning
-                                          : AppColors.textPrimary),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                _simulateTunnelBlackout
-                                    ? 'INS DR: ${_blackoutDistance.toStringAsFixed(1)}m travelled • 0 dB SNR'
-                                    : (_simulateUrbanCanyon
-                                        ? 'High DOP (4.8) • 4 Weak Satellites • NavIC Weight 0.35'
-                                        : 'Hardware GPS + NavIC Fused • High Accuracy'),
-                                style: const TextStyle(
-                                  color: AppColors.textMuted,
-                                  fontSize: 9,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    Icon(
+                      _simulateTunnelBlackout
+                          ? Icons.gps_off
+                          : (_simulateUrbanCanyon
+                              ? Icons.location_city
+                              : Icons.navigation),
+                      color: _simulateTunnelBlackout
+                          ? AppColors.error
+                          : (_simulateUrbanCanyon
+                              ? AppColors.warning
+                              : AppColors.cyan),
+                      size: 20,
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildNavModeChip(
-                            label: 'NOMINAL',
-                            isSelected: !_simulateTunnelBlackout && !_simulateUrbanCanyon,
-                            activeColor: AppColors.cyan,
-                            onTap: () {
-                              setState(() {
-                                _simulateTunnelBlackout = false;
-                                _simulateUrbanCanyon = false;
-                              });
-                            },
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _simulateTunnelBlackout
+                                ? 'AUTO-DETECTED: TUNNEL OUTAGE (PURE INS)'
+                                : (_simulateUrbanCanyon
+                                    ? 'AUTO-DETECTED: URBAN CANYON MULTIPATH'
+                                    : 'AUTO-DETECTED: NOMINAL GNSS LOCK'),
+                            style: TextStyle(
+                              color: _simulateTunnelBlackout
+                                  ? AppColors.error
+                                  : (_simulateUrbanCanyon
+                                      ? AppColors.warning
+                                      : AppColors.textPrimary),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: _buildNavModeChip(
-                            label: 'URBAN CANYON',
-                            isSelected: _simulateUrbanCanyon,
-                            activeColor: AppColors.warning,
-                            onTap: () {
-                              setState(() {
-                                _simulateTunnelBlackout = false;
-                                _simulateUrbanCanyon = true;
-                              });
-                            },
+                          Text(
+                            _simulateTunnelBlackout
+                                ? 'INS DR: ${_blackoutDistance.toStringAsFixed(1)}m travelled • 0 dB SNR'
+                                : (_simulateUrbanCanyon
+                                    ? 'High DOP (4.8) • 4 Weak Satellites • NavIC Weight 0.35'
+                                    : 'Hardware GPS + NavIC Fused • Real-time Navigation'),
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 9,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: _buildNavModeChip(
-                            label: 'TUNNEL TEST',
-                            isSelected: _simulateTunnelBlackout,
-                            activeColor: AppColors.error,
-                            onTap: () {
-                              setState(() {
-                                _simulateTunnelBlackout = true;
-                                _simulateUrbanCanyon = false;
-                                _blackoutDistance = 0.0;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -460,38 +413,6 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavModeChip({
-    required String label,
-    required bool isSelected,
-    required Color activeColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? activeColor.withValues(alpha: 0.2) : AppColors.surface,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: isSelected ? activeColor : AppColors.surfaceBorder,
-            width: isSelected ? 1.5 : 1.0,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? activeColor : AppColors.textMuted,
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-            ),
           ),
         ),
       ),

@@ -135,8 +135,10 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def startup_db_client() -> TelemetryStore:
-    """Initialize database engine without running create_all (managed via Alembic)."""
-    get_engine()
+    """Initialize database engine and ensure tables exist."""
+    engine = get_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     return _store
 
 
