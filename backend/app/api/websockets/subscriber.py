@@ -25,14 +25,18 @@ async def run_telemetry_subscriber(
 
     while stop_event is None or not stop_event.is_set():
         pubsub = None
+        subscriber_client = None
         try:
-            # Create a dedicated client for Pub/Sub with no socket timeout so idle periods do not raise errors
-            subscriber_client = Redis.from_url(
-                os.getenv("SIH_REDIS_URL", "redis://cache:6379/"),
-                decode_responses=True,
-                socket_connect_timeout=3.0,
-                socket_timeout=None,
-            )
+            # Use provided redis_client (e.g. mock/test client or shared instance), or create a dedicated Pub/Sub client
+            if redis_client is not None:
+                subscriber_client = redis_client
+            else:
+                subscriber_client = Redis.from_url(
+                    os.getenv("SIH_REDIS_URL", "redis://cache:6379/"),
+                    decode_responses=True,
+                    socket_connect_timeout=3.0,
+                    socket_timeout=None,
+                )
             pubsub = subscriber_client.pubsub()
             await pubsub.subscribe(channel)
             logger.info("Subscribed to Redis telemetry channel: %s", channel)
@@ -73,13 +77,19 @@ async def run_telemetry_subscriber(
             if pubsub is not None:
                 try:
                     await pubsub.unsubscribe(channel)
-                    await pubsub.close()
+                    if hasattr(pubsub, "aclose"):
+                        await pubsub.aclose()
+                    else:
+                        await pubsub.close()
                 except Exception as close_err:
                     logger.debug("Cleaned up pubsub subscription: %s", close_err)
-            # Close the dedicated subscriber client if it was created
-            if 'subscriber_client' in locals():
+            # Close the dedicated subscriber client if it was instantiated locally (not the passed-in client)
+            if subscriber_client is not None and subscriber_client is not redis_client:
                 try:
-                    await subscriber_client.close()
+                    if hasattr(subscriber_client, "aclose"):
+                        await subscriber_client.aclose()
+                    else:
+                        await subscriber_client.close()
                 except Exception as close_err:
                     logger.debug("Closed subscriber Redis client: %s", close_err)
 
