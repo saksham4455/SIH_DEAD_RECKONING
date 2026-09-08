@@ -12,3 +12,4 @@ python-multipart==0.0.20
 boto3==1.43.89
 pyjwt==2.13.0
 bcrypt==5.0.0
+alembic==1.17.2

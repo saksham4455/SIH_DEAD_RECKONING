@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 from redis.asyncio import Redis
 
 from app.api.websockets.ws_manager import ConnectionManager
@@ -25,7 +26,14 @@ async def run_telemetry_subscriber(
     while stop_event is None or not stop_event.is_set():
         pubsub = None
         try:
-            pubsub = redis_client.pubsub()
+            # Create a dedicated client for Pub/Sub with no socket timeout so idle periods do not raise errors
+            subscriber_client = Redis.from_url(
+                os.getenv("SIH_REDIS_URL", "redis://cache:6379/"),
+                decode_responses=True,
+                socket_connect_timeout=3.0,
+                socket_timeout=None,
+            )
+            pubsub = subscriber_client.pubsub()
             await pubsub.subscribe(channel)
             logger.info("Subscribed to Redis telemetry channel: %s", channel)
             backoff = initial_backoff  # Reset backoff upon successful subscription
@@ -68,5 +76,11 @@ async def run_telemetry_subscriber(
                     await pubsub.close()
                 except Exception as close_err:
                     logger.debug("Cleaned up pubsub subscription: %s", close_err)
+            # Close the dedicated subscriber client if it was created
+            if 'subscriber_client' in locals():
+                try:
+                    await subscriber_client.close()
+                except Exception as close_err:
+                    logger.debug("Closed subscriber Redis client: %s", close_err)
 
     logger.info("Redis telemetry subscriber task finished cleanly.")

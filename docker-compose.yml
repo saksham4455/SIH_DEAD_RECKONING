@@ -5,14 +5,16 @@ services:
       - "8000:8000"
     environment:
       SIH_DATABASE_URL: postgresql+asyncpg://sih:sih@db:5432/sih
-      SIH_REDIS_URL: redis://cache:6379/0
+      SIH_REDIS_URL: redis://redis:6379/
+      SIH_JWT_SECRET: ${SIH_JWT_SECRET}
+      SIH_JWT_ALGORITHM: HS256
       SIH_S3_ENDPOINT_URL: http://minio:9000
       SIH_S3_BUCKET: idr-models
       SIH_S3_ACCESS_KEY: minioadmin
       SIH_S3_SECRET_KEY: minioadmin
     depends_on:
       - db
-      - cache
+      - redis
       - minio
 
   db:
@@ -24,7 +26,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  cache:
+  redis:
     image: redis:7-alpine
 
   minio:
