@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/platform/hardware/sensor_mobile.dart';
 import '../../../../core/platform/hardware/vehicle_alignment_engine.dart';
+import '../../../../core/platform/network/backend_telemetry_client.dart';
 import '../../../navigation_engine/domain/entities/navigation_state.dart';
 import '../widgets/telemetry_card.dart';
 import '../widgets/fusion_mode_badge.dart';
@@ -36,10 +37,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   double _liveSpeed = 0.0;
   double _liveHeading = 0.0;
-  double _liveLat = 28.6139; // Fallback default; overwritten by cached/GPS position
-  double _liveLon = 77.2090;
+  double _liveLat = 28.6390; // Fallback default; overwritten by cached/GPS position
+  double _liveLon = 77.0661;
+  double _liveAltitude = 0.0;
+  double _liveAccuracy = 0.0;
   int _sampleCount = 0;
   bool _hasGpsFix = false;
+
+  final BackendTelemetryClient _backendClient = BackendTelemetryClient();
+  Timer? _telemetryTimer;
 
   // SIH 2026 Interactive Outage & Canyon Demo Switches
   bool _simulateTunnelBlackout = false;
@@ -62,6 +68,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadCachedPosition();
     _startLiveSensors();
     _initRealGpsLocation();
+    _initBackendTelemetry();
+  }
+
+  void _initBackendTelemetry() {
+    _backendClient.initialize(deviceId: 'CPH2745_PHYSICAL');
+    _telemetryTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _sendLiveTelemetry();
+    });
+  }
+
+  void _sendLiveTelemetry() {
+    final activeMode = _simulateTunnelBlackout
+        ? 'DEAD_RECKONING'
+        : (_simulateUrbanCanyon ? 'GNSS_DEGRADED' : (_hasGpsFix ? 'GNSS_LOCKED' : 'DEAD_RECKONING'));
+    _backendClient.sendTelemetry(
+      latitude: _liveLat,
+      longitude: _liveLon,
+      heading: _liveHeading,
+      speed: _liveSpeed,
+      altitude: _liveAltitude > 0 ? _liveAltitude : null,
+      confidence: _simulateTunnelBlackout ? 0.94 : (_simulateUrbanCanyon ? 0.88 : (_hasGpsFix ? 0.99 : 0.85)),
+      gnssAvailable: _hasGpsFix && !_simulateTunnelBlackout,
+      mode: activeMode,
+    );
   }
 
   /// Load last-known GPS position from persistent storage so the app starts
@@ -108,6 +138,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _liveLat = lastPos.latitude;
             _liveLon = lastPos.longitude;
+            _liveAltitude = lastPos.altitude;
+            _liveAccuracy = lastPos.accuracy;
             if (lastPos.speed > 0) _liveSpeed = lastPos.speed;
             _hasGpsFix = true;
           });
@@ -131,6 +163,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _liveLat = posToUse.latitude;
             _liveLon = posToUse.longitude;
+            _liveAltitude = posToUse.altitude;
+            _liveAccuracy = posToUse.accuracy;
             if (posToUse.speed > 0) _liveSpeed = posToUse.speed;
             _hasGpsFix = true;
           });
@@ -147,6 +181,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             setState(() {
               _liveLat = posUpdate.latitude;
               _liveLon = posUpdate.longitude;
+              _liveAltitude = posUpdate.altitude;
+              _liveAccuracy = posUpdate.accuracy;
               if (posUpdate.speed > 0) _liveSpeed = posUpdate.speed;
               _hasGpsFix = true;
             });
@@ -252,6 +288,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _magSubscription?.cancel();
     _posSubscription?.cancel();
     _sensorDriver.stop();
+    _telemetryTimer?.cancel();
+    _backendClient.stopSession();
     super.dispose();
   }
 
@@ -282,9 +320,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       gyroscope: _sampleCount > 0,
       magnetometer: true,
       gnss: !_simulateTunnelBlackout && _hasGpsFix,
+      barometer: false, // Detected: Physical CPH2745 lacks hardware pressure sensor
     );
 
-    final liveSatelliteBreakdown = _simulateTunnelBlackout
+    final liveSatelliteBreakdown = (!_hasGpsFix || _simulateTunnelBlackout)
         ? const SatelliteBreakdownModel(
             navIC: SatelliteInfoModel(count: 0, signalStrength: 0.0),
             gps: SatelliteInfoModel(count: 0, signalStrength: 0.0),
@@ -298,32 +337,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 galileo: SatelliteInfoModel(count: 0, signalStrength: 0.0),
                 glonass: SatelliteInfoModel(count: 0, signalStrength: 0.0),
               )
-            : SatelliteBreakdownModel(
-                navIC: SatelliteInfoModel(
-                    count: 7, signalStrength: 44.0 + (sin(_sampleCount * 0.1) * 2.5)),
-                gps: SatelliteInfoModel(
-                    count: 9, signalStrength: 41.5 + (cos(_sampleCount * 0.08) * 2.0)),
-                galileo: SatelliteInfoModel(
-                    count: 4, signalStrength: 32.0 + (sin(_sampleCount * 0.05) * 1.5)),
-                glonass: SatelliteInfoModel(
-                    count: 5, signalStrength: 35.0 + (cos(_sampleCount * 0.06) * 1.8)),
+            : const SatelliteBreakdownModel(
+                navIC: SatelliteInfoModel(count: 7, signalStrength: 44.0),
+                gps: SatelliteInfoModel(count: 9, signalStrength: 41.5),
+                galileo: SatelliteInfoModel(count: 4, signalStrength: 32.0),
+                glonass: SatelliteInfoModel(count: 5, signalStrength: 35.0),
               ));
 
-    final liveNavicWeight = _simulateTunnelBlackout
+    final liveNavicWeight = (!_hasGpsFix || _simulateTunnelBlackout)
         ? 0.0
         : (_simulateUrbanCanyon ? 0.35 : 0.65);
     final liveMapMatchConfidence = _simulateUrbanCanyon ? 0.82 : 0.96;
 
     final liveInferenceStats = InferenceStatsModel(
-      latencyMs: 16 + (_sampleCount % 7),
+      latencyMs: 16,
       modelVersion: 'v2.4.1-edge-tflite',
       confidence: _simulateUrbanCanyon ? 0.88 : 0.94,
       estimatedSpeed: _liveSpeed,
     );
 
-    final liveThermalState = ThermalStateModel(
-      temperature: 37.0 + (sin(_sampleCount * 0.02) * 0.8),
-      biasCorrection: 0.0018 + (cos(_sampleCount * 0.03) * 0.0004),
+    const liveThermalState = ThermalStateModel(
+      temperature: 36.8,
+      biasCorrection: 0.0018,
     );
 
     final pitchDeg = (_alignmentEngine.pitch * 180 / pi).toStringAsFixed(1);
@@ -342,10 +377,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'SIH 2026 // DEAD RECKONING',
                         style: TextStyle(
                           color: AppColors.cyan,
@@ -355,13 +390,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                       SizedBox(height: 2),
-                      Text(
+                      const Text(
                         'Telemetry Dashboard',
                         style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _backendClient.syncState == BackendSyncState.connected
+                                  ? AppColors.healthy
+                                  : AppColors.warning,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            _backendClient.syncState == BackendSyncState.connected
+                                ? 'BACKEND LIVE: ${_backendClient.recordsSent} FRAMES'
+                                : 'BACKEND: LOCAL BUFFERING',
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -559,7 +620,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ? 'AI DR (INS) Active'
                         : (_simulateUrbanCanyon
                             ? 'Urban Canyon EKF Fix'
-                            : (_hasGpsFix ? 'Real Hardware GPS Fix' : 'IMU Fix')),
+                            : (_hasGpsFix
+                                ? 'Hardware GPS (±${_liveAccuracy.toStringAsFixed(1)}m)'
+                                : 'Pure INS Outage Fix')),
                     accentColor: _simulateTunnelBlackout
                         ? AppColors.error
                         : (_simulateUrbanCanyon ? AppColors.warning : AppColors.gps),

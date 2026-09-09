@@ -74,9 +74,9 @@ class _NavigationMapState extends State<NavigationMap> {
               mapController: _mapController,
               options: MapOptions(
                 initialCenter: currentPos,
-                initialZoom: 16.5,
-                maxZoom: 19.0,
-                minZoom: 4.0,
+                initialZoom: 15.0,
+                maxZoom: 18.0,
+                minZoom: 10.0,
                 interactionOptions: const InteractionOptions(
                   flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                 ),
@@ -86,6 +86,10 @@ class _NavigationMapState extends State<NavigationMap> {
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.example.sih_dead_reckoning',
                   tileProvider: BundledOfflineTileProvider(),
+                  minNativeZoom: 11,
+                  maxNativeZoom: 16,
+                  minZoom: 10.0,
+                  maxZoom: 18.0,
                   errorTileCallback: (tile, error, stackTrace) {
                     // Suppress network tile errors when device has no internet access
                   },

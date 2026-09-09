@@ -30,15 +30,41 @@ flutter:
     - assets/models/
     - assets/maps/
     - assets/maps/tiles/
+    - assets/maps/tiles/11/1462/
+    - assets/maps/tiles/11/1463/
+    - assets/maps/tiles/12/2924/
+    - assets/maps/tiles/12/2925/
+    - assets/maps/tiles/12/2926/
+    - assets/maps/tiles/13/5848/
+    - assets/maps/tiles/13/5849/
+    - assets/maps/tiles/13/5850/
     - assets/maps/tiles/13/5851/
     - assets/maps/tiles/13/5852/
     - assets/maps/tiles/13/5853/
+    - assets/maps/tiles/14/11697/
+    - assets/maps/tiles/14/11698/
+    - assets/maps/tiles/14/11699/
+    - assets/maps/tiles/14/11700/
+    - assets/maps/tiles/14/11701/
+    - assets/maps/tiles/14/11702/
+    - assets/maps/tiles/14/11703/
     - assets/maps/tiles/14/11704/
     - assets/maps/tiles/14/11705/
     - assets/maps/tiles/14/11706/
+    - assets/maps/tiles/14/11707/
+    - assets/maps/tiles/15/23396/
+    - assets/maps/tiles/15/23397/
+    - assets/maps/tiles/15/23398/
+    - assets/maps/tiles/15/23399/
+    - assets/maps/tiles/15/23400/
     - assets/maps/tiles/15/23410/
     - assets/maps/tiles/15/23411/
     - assets/maps/tiles/15/23412/
+    - assets/maps/tiles/16/46795/
+    - assets/maps/tiles/16/46796/
+    - assets/maps/tiles/16/46797/
+    - assets/maps/tiles/16/46798/
+    - assets/maps/tiles/16/46799/
     - assets/maps/tiles/16/46822/
     - assets/maps/tiles/16/46823/
     - assets/maps/tiles/16/46824/

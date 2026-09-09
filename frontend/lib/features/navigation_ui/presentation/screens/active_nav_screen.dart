@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/platform/hardware/sensor_mobile.dart';
 import '../../../../core/platform/hardware/vehicle_alignment_engine.dart';
+import '../../../../core/platform/network/backend_telemetry_client.dart';
 import '../../../navigation_engine/domain/entities/navigation_state.dart';
 import '../widgets/navigation_map.dart';
 import '../widgets/telemetry_card.dart';
@@ -30,8 +31,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
   double _liveSpeed = 0.0;
   double _liveHeading = 0.0;
-  double _liveLat = 28.6139; // Fallback default; overwritten by cached/GPS position
-  double _liveLon = 77.2090;
+  double _liveLat = 28.6390; // Fallback default; overwritten by cached/GPS position
+  double _liveLon = 77.0661;
+  double _liveAltitude = 0.0;
+  double _liveAccuracy = 0.0;
   double _accelX = 0.0;
   double _accelY = 0.0;
   double _accelZ = 9.81;
@@ -45,12 +48,39 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
   int _stationaryCounter = 0;
 
+  final BackendTelemetryClient _backendClient = BackendTelemetryClient();
+  Timer? _telemetryTimer;
+
   @override
   void initState() {
     super.initState();
     _loadCachedPosition();
     _startLiveSensors();
     _initRealGpsLocation();
+    _initBackendTelemetry();
+  }
+
+  void _initBackendTelemetry() {
+    _backendClient.initialize(deviceId: 'CPH2745_PHYSICAL');
+    _telemetryTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _sendLiveTelemetry();
+    });
+  }
+
+  void _sendLiveTelemetry() {
+    final activeMode = _simulateTunnelBlackout
+        ? 'DEAD_RECKONING'
+        : (_simulateUrbanCanyon ? 'GNSS_DEGRADED' : (_hasGpsFix ? 'GNSS_LOCKED' : 'DEAD_RECKONING'));
+    _backendClient.sendTelemetry(
+      latitude: _liveLat,
+      longitude: _liveLon,
+      heading: _liveHeading,
+      speed: _liveSpeed,
+      altitude: _liveAltitude > 0 ? _liveAltitude : null,
+      confidence: _simulateTunnelBlackout ? 0.94 : (_simulateUrbanCanyon ? 0.88 : (_hasGpsFix ? 0.99 : 0.85)),
+      gnssAvailable: _hasGpsFix && !_simulateTunnelBlackout,
+      mode: activeMode,
+    );
   }
 
   @override
@@ -118,6 +148,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
           setState(() {
             _liveLat = lastPos.latitude;
             _liveLon = lastPos.longitude;
+            _liveAltitude = lastPos.altitude;
+            _liveAccuracy = lastPos.accuracy;
             if (lastPos.speed > 0) _liveSpeed = lastPos.speed;
             _hasGpsFix = true;
           });
@@ -142,6 +174,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
           setState(() {
             _liveLat = posToUse.latitude;
             _liveLon = posToUse.longitude;
+            _liveAltitude = posToUse.altitude;
+            _liveAccuracy = posToUse.accuracy;
             if (posToUse.speed > 0) _liveSpeed = posToUse.speed;
             _hasGpsFix = true;
           });
@@ -159,6 +193,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
             setState(() {
               _liveLat = posUpdate.latitude;
               _liveLon = posUpdate.longitude;
+              _liveAltitude = posUpdate.altitude;
+              _liveAccuracy = posUpdate.accuracy;
               if (posUpdate.speed > 0) _liveSpeed = posUpdate.speed;
               _hasGpsFix = true;
             });
@@ -250,6 +286,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
     _magSubscription?.cancel();
     _posSubscription?.cancel();
     _sensorDriver.stop();
+    _telemetryTimer?.cancel();
+    _backendClient.stopSession();
     super.dispose();
   }
 
@@ -365,7 +403,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
                                     ? 'High DOP (4.8) • 4 Weak Satellites • NavIC Weight 0.35'
                                     : (!_hasGpsFix
                                         ? 'GPS/Permission Unavailable • 100% Offline Dead Reckoning Active'
-                                        : 'Hardware GPS + NavIC Fused • Real-time Navigation')),
+                                        : 'Hardware GPS (±${_liveAccuracy.toStringAsFixed(1)}m) • Live Navigation')),
                             style: const TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 9,
