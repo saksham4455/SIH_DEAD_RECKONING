@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:sensors_plus/sensors_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/platform/hardware/sensor_mobile.dart';
 import '../../../../core/platform/hardware/vehicle_alignment_engine.dart';
@@ -35,8 +36,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   double _liveSpeed = 0.0;
   double _liveHeading = 0.0;
-  double _liveLat = 28.6139; // Updated via GPS
-  double _liveLon = 77.2090; // Updated via GPS
+  double _liveLat = 28.6139; // Fallback default; overwritten by cached/GPS position
+  double _liveLon = 77.2090;
   int _sampleCount = 0;
   bool _hasGpsFix = false;
 
@@ -44,6 +45,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _simulateTunnelBlackout = false;
   bool _simulateUrbanCanyon = false;
   double _blackoutDistanceTravelled = 0.0;
+
+  int _stationaryCounter = 0;
 
   final List<AnomalyEventModel> _liveAnomalies = [
     AnomalyEventModel(
@@ -56,8 +59,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    _loadCachedPosition();
     _startLiveSensors();
     _initRealGpsLocation();
+  }
+
+  /// Load last-known GPS position from persistent storage so the app starts
+  /// at the user's real location even when GPS/internet are completely off.
+  Future<void> _loadCachedPosition() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedLat = prefs.getDouble('last_known_lat');
+      final cachedLon = prefs.getDouble('last_known_lon');
+      if (cachedLat != null && cachedLon != null && mounted) {
+        setState(() {
+          _liveLat = cachedLat;
+          _liveLon = cachedLon;
+        });
+      }
+    } catch (_) {}
+  }
+
+  /// Persist a good GPS fix so future app launches start at the right location.
+  Future<void> _cachePosition(double lat, double lon) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('last_known_lat', lat);
+      await prefs.setDouble('last_known_lon', lon);
+    } catch (_) {}
   }
 
   void _initRealGpsLocation() async {
@@ -82,6 +111,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (lastPos.speed > 0) _liveSpeed = lastPos.speed;
             _hasGpsFix = true;
           });
+          _cachePosition(lastPos.latitude, lastPos.longitude);
         }
 
         Position? currentPos;
@@ -104,6 +134,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (posToUse.speed > 0) _liveSpeed = posToUse.speed;
             _hasGpsFix = true;
           });
+          _cachePosition(posToUse.latitude, posToUse.longitude);
         }
 
         _posSubscription = Geolocator.getPositionStream(
@@ -119,6 +150,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (posUpdate.speed > 0) _liveSpeed = posUpdate.speed;
               _hasGpsFix = true;
             });
+            _cachePosition(posUpdate.latitude, posUpdate.longitude);
           }
         });
       }
@@ -144,19 +176,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _sampleCount++;
 
-            // AI Speed & Dead Reckoning Navigation during GNSS Outage / Tunnel
+            // Zero-Velocity Update (ZUPT) & AI Dead Reckoning during Outage / No GPS
             if (_simulateTunnelBlackout || !_hasGpsFix) {
-              final nhcMagnitude = sqrt(
-                  nhcAccel[0] * nhcAccel[0] +
-                  nhcAccel[1] * nhcAccel[1] +
-                  nhcAccel[2] * nhcAccel[2]);
-              _liveSpeed = (_liveSpeed * 0.82) + (nhcMagnitude * 0.18 * 2.5);
-              final distanceMeters = _liveSpeed * 0.05;
-              _blackoutDistanceTravelled += distanceMeters;
-              final headingRad = _liveHeading * pi / 180;
-              _liveLat += (distanceMeters * cos(headingRad)) / 111000;
-              _liveLon += (distanceMeters * sin(headingRad)) /
-                  (111000 * cos(_liveLat * pi / 180));
+              // Stationary detection: if total dynamic acceleration is below noise floor
+              if (netAccel < 0.38) {
+                _stationaryCounter++;
+                if (_stationaryCounter >= 3) {
+                  // Device is confirmed stationary: enforce hard zero velocity (ZUPT)
+                  _liveSpeed = 0.0;
+                }
+              } else {
+                _stationaryCounter = 0;
+                // Physical movement detected (walking steps or vehicle engine motion)
+                final forwardAccel = nhcAccel[0];
+                if (forwardAccel.abs() > 0.45) {
+                  _liveSpeed = (_liveSpeed + forwardAccel * 0.05).clamp(0.0, 35.0);
+                } else if (_liveSpeed > 0) {
+                  _liveSpeed = _liveSpeed * 0.94;
+                }
+              }
+
+              // Only integrate position when real movement is confirmed
+              if (_liveSpeed > 0.1) {
+                final distanceMeters = _liveSpeed * 0.05;
+                _blackoutDistanceTravelled += distanceMeters;
+                final headingRad = _liveHeading * pi / 180;
+                _liveLat += (distanceMeters * cos(headingRad)) / 111000;
+                _liveLon += (distanceMeters * sin(headingRad)) /
+                    (111000 * cos(_liveLat * pi / 180));
+              }
             }
 
             // Real-time Road Anomaly / Pothole Detection

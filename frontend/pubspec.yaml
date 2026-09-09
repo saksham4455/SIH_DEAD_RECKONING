@@ -16,6 +16,8 @@ dependencies:
   sensors_plus: ^6.1.1
   tflite_flutter: ^0.12.1
   geolocator: ^13.0.1
+  shared_preferences: ^2.3.3
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:
@@ -27,5 +29,18 @@ flutter:
   assets:
     - assets/models/
     - assets/maps/
+    - assets/maps/tiles/
+    - assets/maps/tiles/13/5851/
+    - assets/maps/tiles/13/5852/
+    - assets/maps/tiles/13/5853/
+    - assets/maps/tiles/14/11704/
+    - assets/maps/tiles/14/11705/
+    - assets/maps/tiles/14/11706/
+    - assets/maps/tiles/15/23410/
+    - assets/maps/tiles/15/23411/
+    - assets/maps/tiles/15/23412/
+    - assets/maps/tiles/16/46822/
+    - assets/maps/tiles/16/46823/
+    - assets/maps/tiles/16/46824/
     - assets/icons/
     - assets/config/

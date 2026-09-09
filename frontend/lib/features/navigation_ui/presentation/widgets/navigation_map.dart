@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/platform/maps/offline_tile_provider.dart';
 import '../../../navigation_engine/domain/entities/navigation_state.dart';
 
 class NavigationMap extends StatefulWidget {
@@ -84,6 +85,7 @@ class _NavigationMapState extends State<NavigationMap> {
                 TileLayer(
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.example.sih_dead_reckoning',
+                  tileProvider: BundledOfflineTileProvider(),
                   errorTileCallback: (tile, error, stackTrace) {
                     // Suppress network tile errors when device has no internet access
                   },
@@ -158,7 +160,7 @@ class _NavigationMapState extends State<NavigationMap> {
                     Icon(Icons.shield_outlined, size: 13, color: AppColors.cyan),
                     SizedBox(width: 5),
                     Text(
-                      'TACTICAL OFFLINE VECTOR MAP // PURE INS',
+                      'EMBEDDED OFFLINE OSM // PURE INS',
                       style: TextStyle(
                         color: AppColors.cyan,
                         fontSize: 10,
