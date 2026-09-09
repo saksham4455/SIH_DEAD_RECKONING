@@ -382,8 +382,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ? Icons.gps_off
                               : (_simulateUrbanCanyon
                                   ? Icons.location_city
-                                  : Icons.sensors),
-                          color: _simulateTunnelBlackout
+                                  : (!_hasGpsFix ? Icons.sensors_off : Icons.sensors)),
+                          color: (_simulateTunnelBlackout || !_hasGpsFix)
                               ? AppColors.error
                               : (_simulateUrbanCanyon
                                   ? AppColors.warning
@@ -400,9 +400,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ? 'AUTO-DETECTED: TUNNEL OUTAGE (PURE INS)'
                                     : (_simulateUrbanCanyon
                                         ? 'AUTO-DETECTED: URBAN CANYON (HIGH DOP EKF)'
-                                        : 'AUTO-DETECTED: NOMINAL GNSS LOCK'),
+                                        : (!_hasGpsFix
+                                            ? 'AUTO-DETECTED: PURE INS (NO GPS PERMISSION)'
+                                            : 'AUTO-DETECTED: NOMINAL GNSS LOCK')),
                                 style: TextStyle(
-                                  color: _simulateTunnelBlackout
+                                  color: (_simulateTunnelBlackout || !_hasGpsFix)
                                       ? AppColors.error
                                       : (_simulateUrbanCanyon
                                           ? AppColors.warning
@@ -416,7 +418,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ? 'Pure IMU DR: ${_blackoutDistanceTravelled.toStringAsFixed(1)}m travelled'
                                     : (_simulateUrbanCanyon
                                         ? 'Weak Satellites (DOP 4.8) • Fusing IMU + NavIC'
-                                        : 'Real-time hardware sensors active • Automatic Outage Detection'),
+                                        : (!_hasGpsFix
+                                            ? 'GPS/Permission Unavailable • 100% Offline Dead Reckoning Active'
+                                            : 'Real-time hardware sensors active • Automatic Outage Detection')),
                                 style: const TextStyle(
                                   color: AppColors.textMuted,
                                   fontSize: 10,

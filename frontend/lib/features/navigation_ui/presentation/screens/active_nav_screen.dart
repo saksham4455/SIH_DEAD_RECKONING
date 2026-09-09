@@ -281,8 +281,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           ? Icons.gps_off
                           : (_simulateUrbanCanyon
                               ? Icons.location_city
-                              : Icons.navigation),
-                      color: _simulateTunnelBlackout
+                              : (!_hasGpsFix ? Icons.sensors_off : Icons.navigation)),
+                      color: (_simulateTunnelBlackout || !_hasGpsFix)
                           ? AppColors.error
                           : (_simulateUrbanCanyon
                               ? AppColors.warning
@@ -299,9 +299,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
                                 ? 'AUTO-DETECTED: TUNNEL OUTAGE (PURE INS)'
                                 : (_simulateUrbanCanyon
                                     ? 'AUTO-DETECTED: URBAN CANYON MULTIPATH'
-                                    : 'AUTO-DETECTED: NOMINAL GNSS LOCK'),
+                                    : (!_hasGpsFix
+                                        ? 'AUTO-DETECTED: PURE INS (NO GPS PERMISSION)'
+                                        : 'AUTO-DETECTED: NOMINAL GNSS LOCK')),
                             style: TextStyle(
-                              color: _simulateTunnelBlackout
+                              color: (_simulateTunnelBlackout || !_hasGpsFix)
                                   ? AppColors.error
                                   : (_simulateUrbanCanyon
                                       ? AppColors.warning
@@ -315,7 +317,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
                                 ? 'INS DR: ${_blackoutDistance.toStringAsFixed(1)}m travelled • 0 dB SNR'
                                 : (_simulateUrbanCanyon
                                     ? 'High DOP (4.8) • 4 Weak Satellites • NavIC Weight 0.35'
-                                    : 'Hardware GPS + NavIC Fused • Real-time Navigation'),
+                                    : (!_hasGpsFix
+                                        ? 'GPS/Permission Unavailable • 100% Offline Dead Reckoning Active'
+                                        : 'Hardware GPS + NavIC Fused • Real-time Navigation')),
                             style: const TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 9,
