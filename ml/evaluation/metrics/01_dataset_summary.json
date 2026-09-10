@@ -1,0 +1,19 @@
+{
+  "total_rows": 691211,
+  "total_tracks": 14,
+  "duration_hours": 19.2,
+  "mean_speed_kmh": 29.36,
+  "max_speed_kmh": 125.78,
+  "columns": [
+    "time",
+    "track_id",
+    "ax",
+    "ay",
+    "az",
+    "gx",
+    "gy",
+    "gz",
+    "speed_ms"
+  ],
+  "parquet_file_size_mb": 28.2
+}

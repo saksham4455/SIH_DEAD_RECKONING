@@ -1,0 +1,15 @@
+{
+  "test_track_id": "track_11_S-Dataset_S-A7",
+  "duration_seconds": 4387.1,
+  "ground_truth_traversed_m": 28853.09,
+  "naive_double_integration": {
+    "final_error_m": 102320.25,
+    "drift_rate_m_per_min": 1399.38,
+    "error_pct_of_distance": 354.62
+  },
+  "heuristic_zupt_baseline": {
+    "final_error_m": 28710.65,
+    "drift_rate_m_per_min": 392.66,
+    "error_pct_of_distance": 99.51
+  }
+}
