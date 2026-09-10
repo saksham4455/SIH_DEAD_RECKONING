@@ -75,11 +75,15 @@ class AiInferencePanel extends StatelessWidget {
                     const Text('EST. SPEED',
                         style: TextStyle(
                             color: AppColors.textMuted, fontSize: 10)),
-                    Text('${inferenceStats.estimatedSpeed} m/s',
-                        style: const TextStyle(
-                            color: AppColors.cyan,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14)),
+                    Text(
+                      '${inferenceStats.estimatedSpeed.toStringAsFixed(1)} m/s',
+                      style: const TextStyle(
+                        color: AppColors.cyan,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
                   ],
                 ),
               ),

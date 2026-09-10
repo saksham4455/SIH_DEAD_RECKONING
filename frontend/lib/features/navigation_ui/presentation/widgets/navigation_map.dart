@@ -83,8 +83,8 @@ class _NavigationMapState extends State<NavigationMap> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.example.sih_dead_reckoning',
+                  urlTemplate: 'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png?api_key=9ca55c4e-7cb5-45b9-9da3-10421c141cbe',
+                  userAgentPackageName: 'SIH2026-DeadReckoning',
                   tileProvider: BundledOfflineTileProvider(),
                   minNativeZoom: 11,
                   maxNativeZoom: 16,
@@ -163,8 +163,8 @@ class _NavigationMapState extends State<NavigationMap> {
                   children: [
                     Icon(Icons.shield_outlined, size: 13, color: AppColors.cyan),
                     SizedBox(width: 5),
-                    Text(
-                      'EMBEDDED OFFLINE OSM // PURE INS',
+                    const Text(
+                      'STADIA MAPS // PURE INS',
                       style: TextStyle(
                         color: AppColors.cyan,
                         fontSize: 10,
