@@ -174,8 +174,16 @@ async def get_session_summary(db: AsyncSession, session_id: str) -> SessionSumma
         for r in records
     ]
 
+    started_at = session.started_at
     stopped_at = session.stopped_at or datetime.now(timezone.utc)
-    duration = (stopped_at - session.started_at).total_seconds()
+    if started_at is not None:
+        if started_at.tzinfo is None and stopped_at.tzinfo is not None:
+            started_at = started_at.replace(tzinfo=timezone.utc)
+        elif started_at.tzinfo is not None and stopped_at.tzinfo is None:
+            stopped_at = stopped_at.replace(tzinfo=timezone.utc)
+        duration = (stopped_at - started_at).total_seconds()
+    else:
+        duration = 0.0
 
     return SessionSummary(
         id=session.id,

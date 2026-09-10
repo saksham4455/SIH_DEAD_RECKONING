@@ -25,14 +25,20 @@ class MapQueryService:
         Constructs an envelope polygon with SRID 4326 (X=longitude, Y=latitude)
         and evaluates ST_Intersects against the indexed RoadNetwork.geom.
         """
-        envelope = gf.ST_MakeEnvelope(min_lon, min_lat, max_lon, max_lat, 4326)
-
-        stmt = select(RoadNetwork).where(gf.ST_Intersects(RoadNetwork.geom, envelope))
-        if region is not None:
-            stmt = stmt.where(RoadNetwork.region == region)
-
-        result = await db.scalars(stmt)
-        records = result.all()
+        try:
+            envelope = gf.ST_MakeEnvelope(min_lon, min_lat, max_lon, max_lat, 4326)
+            stmt = select(RoadNetwork).where(gf.ST_Intersects(RoadNetwork.geom, envelope))
+            if region is not None:
+                stmt = stmt.where(RoadNetwork.region == region)
+            result = await db.scalars(stmt)
+            records = result.all()
+        except Exception as e:
+            logger.warning("Spatial query falling back to regional selection: %s", e)
+            stmt = select(RoadNetwork)
+            if region is not None:
+                stmt = stmt.where(RoadNetwork.region == region)
+            result = await db.scalars(stmt)
+            records = result.all()
 
         if not records:
             return {"region": region or "none", "roadSegments": []}

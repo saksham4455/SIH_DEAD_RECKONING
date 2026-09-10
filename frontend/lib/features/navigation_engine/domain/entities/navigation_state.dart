@@ -43,12 +43,14 @@ class SensorHealthModel {
   final bool gyroscope;
   final bool magnetometer;
   final bool gnss;
+  final bool barometer;
 
   const SensorHealthModel({
     required this.accelerometer,
     required this.gyroscope,
     required this.magnetometer,
     required this.gnss,
+    this.barometer = false,
   });
 }
 

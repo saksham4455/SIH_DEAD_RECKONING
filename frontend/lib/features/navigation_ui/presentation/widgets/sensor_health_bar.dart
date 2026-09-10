@@ -8,11 +8,15 @@ class SensorHealthBar extends StatelessWidget {
   const SensorHealthBar({Key? key, required this.sensorHealth})
       : super(key: key);
 
-  Widget _buildSensorPill(String name, bool isHealthy) {
-    final color = isHealthy ? AppColors.healthy : AppColors.error;
+  Widget _buildSensorPill(String name, bool isHealthy, {bool isUnsupported = false}) {
+    final color = isUnsupported
+        ? AppColors.textMuted
+        : (isHealthy ? AppColors.healthy : AppColors.error);
+    final statusText = isUnsupported ? 'N/A' : (isHealthy ? 'OK' : 'OFF');
+
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(6),
@@ -30,10 +34,10 @@ class SensorHealthBar extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              isHealthy ? 'OK' : 'ERR',
+              statusText,
               style: TextStyle(
                 color: color,
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -56,25 +60,40 @@ class SensorHealthBar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'IMU & SENSOR ARRAY HEALTH',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.8,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'PHYSICAL HARDWARE SENSORS',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              Text(
+                sensorHealth.barometer ? 'BARO DETECTED' : 'BARO: NO SENSOR (GPS ALT)',
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
           Row(
             children: [
               _buildSensorPill('ACCEL', sensorHealth.accelerometer),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               _buildSensorPill('GYRO', sensorHealth.gyroscope),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               _buildSensorPill('MAG', sensorHealth.magnetometer),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               _buildSensorPill('GNSS', sensorHealth.gnss),
+              const SizedBox(width: 4),
+              _buildSensorPill('BARO', sensorHealth.barometer, isUnsupported: !sensorHealth.barometer),
             ],
           ),
         ],
