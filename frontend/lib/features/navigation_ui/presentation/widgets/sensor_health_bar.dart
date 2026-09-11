@@ -63,21 +63,29 @@ class SensorHealthBar extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'PHYSICAL HARDWARE SENSORS',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.8,
+              const Flexible(
+                child: Text(
+                  'HW SENSORS',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Text(
-                sensorHealth.barometer ? 'BARO DETECTED' : 'BARO: NO SENSOR (GPS ALT)',
-                style: const TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 9,
-                  fontWeight: FontWeight.bold,
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  sensorHealth.barometer ? 'BARO OK' : 'BARO: N/A (GPS ALT)',
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
                 ),
               ),
             ],

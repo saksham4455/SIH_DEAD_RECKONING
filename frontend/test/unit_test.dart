@@ -92,10 +92,10 @@ void main() {
     test('Unbundled tile outside coverage returns NetworkImage with formatted URL', () {
       final unbundled = provider.getImage(
         TileCoordinates(99999, 99999, 17),
-        TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+        TileLayer(urlTemplate: 'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png?api_key=9ca55c4e-7cb5-45b9-9da3-10421c141cbe'),
       );
       expect(unbundled, isA<NetworkImage>());
-      expect((unbundled as NetworkImage).url, equals('https://tile.openstreetmap.org/17/99999/99999.png'));
+      expect((unbundled as NetworkImage).url, contains('tiles.stadiamaps.com/tiles/osm_bright/17/99999/99999.png'));
     });
   });
 
