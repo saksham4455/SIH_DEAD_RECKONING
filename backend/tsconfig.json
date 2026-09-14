@@ -12,8 +12,8 @@
     "resolveJsonModule": true,
     "declaration": false,
     "sourceMap": true,
-    "moduleResolution": "node"
+    "types": ["node", "jest", "express", "ws", "cors"]
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "src/__tests__"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

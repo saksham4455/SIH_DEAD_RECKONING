@@ -1,204 +1,122 @@
-# SIH Dead Reckoning — Backend
+# SIH26168 — Backend Infrastructure & Sensor Fusion Engines
 
-Real-time GNSS/IMU sensor-fusion backend for the [SIH_DEAD_RECKONING](https://github.com/saksham4455/SIH_DEAD_RECKONING)
-frontend. Ingests raw device sensor data over WebSocket, runs it through an
-Extended Kalman Filter (dead reckoning + GNSS fusion), and streams back
-diagnostics the mobile app can render directly — matching the `types/navigation.ts`
-shapes already used on the frontend.
+The `backend/` directory provides the dual backend architecture powering the SIH Dead Reckoning navigation system:
+1. **Python FastAPI Hub (Port 8000)**: Asynchronous REST telematics, PostGIS/SQLite persistence, JWT authentication, Device management, and Model Hub (OTA deployment).
+2. **TypeScript EKF Engine (Port 8080)**: High-frequency real-time sensor fusion, 4-state CTRV Extended Kalman Filter, NavIC/GPS satellite weighting, and WebSocket streaming.
 
-## 📁 Backend Architecture
+---
+
+## 📁 Architecture Overview
 
 ```
 backend/
+├── app/                        # Python FastAPI Backend
+│   ├── main.py                 # Application lifecycle, CORS, routing
+│   ├── config.py               # Pydantic Settings (SIH_ prefix)
+│   ├── api/v1/                 # REST endpoints
+│   │   ├── auth.py             # User login, refresh token, /me
+│   │   ├── devices.py          # Device registration & version pinning
+│   │   ├── session.py          # Drive session lifecycle (start, stop, summary)
+│   │   ├── telemetry.py        # Single & batch telemetry ingestion
+│   │   ├── maps.py             # PostGIS corridor queries & OSM upload
+│   │   └── models_hub.py       # TFLite OTA upload, latest version, download
+│   ├── api/websockets/         # Live judge dashboard & replay stream
+│   ├── core/                   # Security, DB sessionmaker, Redis pub/sub
+│   ├── models/                 # SQLAlchemy 2.0 async declarative models
+│   ├── schemas/                # Pydantic v2 validation schemas
+│   ├── services/               # Drift analyzer, map query, road seeder, model registry
+│   └── storage/                # S3/MinIO & local filesystem object storage
 │
-├── package.json
-├── tsconfig.json
-├── jest.config.js
-├── .env.example
+├── src/                        # TypeScript Real-Time Fusion Engine
+│   ├── server.ts               # Express + ws bootstrap
+│   ├── app.ts                  # Express application factory
+│   ├── api/routes/             # REST fallback routes (/api/dashboard, /api/sessions)
+│   ├── core/                   # Fusion mathematics (pure, no I/O)
+│   │   ├── kalmanFilter.ts     # 4-state CTRV Extended Kalman Filter
+│   │   ├── deadReckoning.ts    # IMU preprocessing & gravity removal
+│   │   ├── navigationEngine.ts # Per-session state machine
+│   │   ├── satelliteFusion.ts  # NavIC/GPS SNR-weighted blending
+│   │   ├── anomalyDetection.ts # Pothole & speed-breaker classifier
+│   │   ├── thermalCompensation.ts # IMU temperature bias correction
+│   │   └── aiInference.ts      # Confidence heuristic scorer
+│   ├── websocket/socketServer.ts # High-frequency WebSocket ingest (/ws)
+│   └── services/sessionStore.ts # Thread-safe promise-queued session store
 │
-├── public/
-│   └── device-client.html      # browser page: streams a real phone's sensors/GPS to /ws
-│
-├── data/
-│   └── sessions.json           # file-backed session store (created on first run)
-│
-└── src/
-    │
-    ├── server.ts                # HTTP + WebSocket bootstrap
-    ├── app.ts                   # Express app factory
-    │
-    ├── api/
-    │   ├── routes/
-    │   │   ├── sessionRoutes.ts     # GET/DELETE /api/sessions, GET /:id/live
-    │   │   └── dashboardRoutes.ts   # GET /api/dashboard/summary
-    │   └── middleware/
-    │       └── errorHandler.ts
-    │
-    ├── websocket/
-    │   └── socketServer.ts      # real-time device ingest — see protocol below
-    │
-    ├── core/                    # the fusion engine (pure, no I/O)
-    │   ├── sessionManager.ts        # owns live NavigationEngine instances + broadcast loop
-    │   ├── navigationEngine.ts      # per-session state machine (IMU + GNSS -> snapshot)
-    │   ├── kalmanFilter.ts          # 4-state CTRV Extended Kalman Filter
-    │   ├── deadReckoning.ts         # raw IMU sample -> scalar KF inputs
-    │   ├── satelliteFusion.ts       # per-constellation weighting, fix-quality assessment
-    │   ├── thermalCompensation.ts   # temperature-based IMU bias correction
-    │   ├── anomalyDetection.ts      # pothole/bump detection from vertical accel
-    │   └── aiInference.ts           # confidence-score heuristic for the diagnostics panel
-    │
-    ├── services/
-    │   └── sessionStore.ts      # persistence (file-backed; swap for a DB later)
-    │
-    ├── types/
-    │   └── navigation.ts        # mirrors the frontend's types/navigation.ts 1:1
-    │
-    ├── utils/
-    │   ├── matrix.ts             # tiny linear-algebra helpers for the EKF
-    │   └── geo.ts                # ENU projection, heading conversions, haversine
-    │
-    ├── config/
-    │   └── constants.ts          # every tunable threshold/noise value in one place
-    │
-    └── __tests__/                 # jest unit tests for the engine, matrix, AI heuristic
+├── tests/                      # Python PyTest test suite (58 tests)
+├── src/__tests__/              # TypeScript Jest test suite (11 tests)
+├── public/device-client.html   # Browser phone sensor streaming test client
+├── sih_dead_reckoning.db       # Populated 86 KB SQLite database
+├── tsconfig.json               # TypeScript configuration
+├── package.json                # Node.js dependencies & scripts
+└── requirements.txt            # Python dependencies
 ```
 
-## 🚦 Data flow (real device → UI)
+---
 
+## ⚡ Running the Backend
+
+### Python FastAPI Backend (Port 8000)
+```powershell
+# From project root:
+cd backend
+& "..\.venv\Scripts\python.exe" -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-Phone sensors (accel, gyro, GPS)
-        │  raw JSON frames over WebSocket
-        ▼
-  socketServer.ts  ──────────────► SessionManager
-        │                                │
-        │                     one NavigationEngine per session
-        │                                │
-        │                 IMU  → deadReckoning → KalmanFilter.predict()
-        │                 GNSS → satelliteFusion → KalmanFilter.updateGeneric()
-        │                                │
-        │                     DiagnosticsSnapshot (every 200ms)
-        ▼                                │
-  WebSocket push ◄────────────────────────┘
-        │
-        ▼
-  Frontend useNavigationData() hook → Screens → UI components
-```
+- **API Documentation (Swagger UI)**: `http://localhost:8000/docs`
+- **Health Probe**: `http://localhost:8000/health`
+- **Ready Probe**: `http://localhost:8000/ready`
 
-On `stop_session` (or an unexpected disconnect), the session's track and
-anomalies are persisted via `sessionStore.ts` and become visible through the
-REST API (`/api/sessions`, `/api/dashboard/summary`) for `DashboardScreen`.
-
-## 🔌 WebSocket ingest protocol
-
-Endpoint: `ws://<host>:8080/ws`. One connection = one session.
-
-**Client → server** (JSON text frames):
-
-| Type | Payload | Notes |
-|---|---|---|
-| `start_session` | `{ sessionId? }` | Omit `sessionId` to let the server generate one |
-| `imu` | `{ data: ImuSample }` | Send at whatever rate the device produces samples (20–100Hz typical) |
-| `gnss` | `{ data: GnssFix }` | Send on every OS location update |
-| `simulate_outage` | `{ enabled: boolean }` | Wires up `SimulateOutageButton` |
-| `stop_session` | — | Ends and persists the session |
-
-**Server → client:**
-
-| Type | Payload |
-|---|---|
-| `session_started` | `{ sessionId }` |
-| `diagnostics` | `{ data: DiagnosticsSnapshot }` — pushed every `DIAGNOSTICS_BROADCAST_INTERVAL_MS` |
-| `anomaly` | `{ data: RoadAnomalyEvent }` — pushed as detected |
-| `session_stopped` | `{ data: SessionSummary }` |
-| `error` | `{ message }` |
-
-`ImuSample` and `GnssFix` shapes are defined in `src/types/navigation.ts` —
-mirror these exactly on the frontend/mobile side:
-
-```ts
-interface ImuSample {
-  timestamp: number;           // ms epoch
-  gyro: { x, y, z };           // rad/s
-  accel: { x, y, z };          // m/s^2, gravity INCLUDED (raw off the sensor)
-  temperatureC?: number | null;
-}
-
-interface GnssFix {
-  timestamp: number;
-  latitude: number;
-  longitude: number;
-  altitude?: number;
-  speedMps?: number;           // Doppler-derived ground speed, if available
-  bearingDeg?: number;         // Doppler-derived course-over-ground
-  hdop?: number;
-  satellites: { constellation: 'GPS'|'NAVIC'|'OTHER'; snrDbHz: number; usedInFix: boolean }[];
-}
-```
-
-## 🌐 REST API
-
-| Method | Route | Purpose |
-|---|---|---|
-| GET | `/api/health` | Liveness check |
-| GET | `/api/sessions` | List past sessions (for `DashboardScreen`) |
-| GET | `/api/sessions/:id` | Full track + anomalies for a past session |
-| GET | `/api/sessions/:id/live` | On-demand snapshot of a *live* session (polling fallback) |
-| DELETE | `/api/sessions/:id` | Discard a recorded session |
-| GET | `/api/dashboard/summary` | Aggregate stats for the dashboard StatCards |
-
-## ▶️ Running it
-
-```bash
+### TypeScript EKF & WebSocket Engine (Port 8080)
+```powershell
+cd backend
 npm install
-cp .env.example .env
-npm run dev        # ts-node-dev, auto-reload
-# or
-npm run build && npm start
+npm run build
+npm run dev
+# Or direct production start:
+node dist/server.js
 ```
+- **REST Endpoints**: `http://localhost:8080/api`
+- **WebSocket Ingest**: `ws://localhost:8080/ws`
+- **Browser Sensor Client**: `http://localhost:8080/device-client.html`
 
-Server logs the REST, WebSocket, and test-client URLs on boot.
+---
 
-### Testing with a real phone (no native app needed yet)
+## 🔌 API Endpoint Summary
 
-Open **`http://<your-machine-ip>:8080/device-client.html`** on a phone on the
-same network. It requests motion-sensor + location permission, then streams
-the phone's real accelerometer, gyroscope, and GPS to `/ws` exactly as a
-native build would, and renders the live diagnostics coming back. Useful for
-validating the fusion pipeline against genuine sensor noise before the
-React Native app's sensor plumbing (`react-native-sensors` /
-`react-native-geolocation-service` or similar) is wired up to send the same
-message shapes.
+### FastAPI REST Endpoints (Port 8000)
+| Endpoint | Method | Auth | Description |
+|---|---|---|---|
+| `/api/v1/auth/login` | `POST` | Public | Bcrypt user authentication, returns JWT access & refresh tokens |
+| `/api/v1/auth/refresh` | `POST` | Public | Issues new access token from valid refresh token |
+| `/api/v1/devices/register` | `POST` | Public | Registers hardware device with keyed SHA-256 hash |
+| `/api/v1/devices` | `GET` | Admin | Lists registered devices and active pinned models |
+| `/api/v1/session/start` | `POST` | Device | Initiates driving session |
+| `/api/v1/session/{id}/stop` | `POST` | Device | Closes session and sets completion timestamp |
+| `/api/v1/session/{id}/summary` | `GET` | Public | Drift analytics (RMSE, MAE, dead-reckoning drift %) |
+| `/api/v1/telemetry` | `POST` | Device | Ingests telemetry with PostGIS Point geometry |
+| `/api/v1/telemetry/batch` | `POST` | Device | Atomically inserts 1–1000 telemetry records |
+| `/api/v1/maps/corridor` | `GET` | Public | PostGIS `ST_Intersects` bounding box road query |
+| `/api/v1/models/latest` | `GET` | Public | Retrieves active TFLite model metadata |
+| `/api/v1/models/download/{id}` | `GET` | Public | Streams raw TFLite model binary chunks |
+| `/ws/judge-dashboard` | `WS` | Public | Live telemetry stream + interactive session replay |
 
-> Browser Geolocation doesn't expose real per-satellite constellation/SNR
-> data, so the client synthesizes a plausible 5-satellite `OTHER`
-> breakdown sized off reported GPS accuracy. A native app reading Android's
-> `GnssStatus` or iOS CoreLocation's satellite info can send genuine
-> per-constellation data, which is what actually drives the NAVIC weighting.
+### TypeScript WebSocket Protocol (Port 8080)
+| Message Type | Direction | Payload Description |
+|---|---|---|
+| `start_session` | Client → Server | Client UUID or auto-generated session start |
+| `imu` | Client → Server | 20–100 Hz 6-axis accel/gyro + temperature |
+| `gnss` | Client → Server | 1–10 Hz lat/lon, Doppler speed, bearing, HDOP, satellites |
+| `simulate_outage` | Client → Server | Drops GNSS fixes for live dead reckoning demos |
+| `diagnostics` | Server → Client | 5 Hz broadcast: vehicle state, fusion mode, NavIC weight, confidence |
+| `anomaly` | Server → Client | Instant push: detected potholes and speed-breakers |
 
-### Tests
+---
+
+## 🧪 Automated Test Suites
 
 ```bash
+# Python FastAPI Tests (58 tests)
+pytest tests/
+
+# TypeScript Jest Tests (11 tests across 3 suites)
 npm test
 ```
-
-Covers the matrix inversion helper, the AI confidence heuristic, and an
-end-to-end `NavigationEngine` scenario (anchor on first fix, GNSS timeout →
-dead reckoning fallback, outage simulation, distance accumulation).
-
-## ⚙️ Tuning
-
-Every threshold — process noise, UERE per constellation, anomaly
-sensitivity, thermal coefficients, confidence penalties, broadcast rate — is
-centralized in `src/config/constants.ts` with comments on units and where
-the number came from. Nothing else in the codebase hardcodes a magic number.
-
-## 📌 Known simplifications (flagged, not hidden)
-
-- **Device orientation**: `deadReckoning.ts` assumes a roughly flat, fixed
-  mount (x-axis forward, z-axis up). A phone loose in a pocket needs an
-  attitude estimator (Madgwick/complementary filter) upstream — not
-  implemented here to keep the EKF math tractable for the demo.
-- **Thermal coefficients** in `constants.ts` are illustrative MEMS figures,
-  not calibrated against the actual target device.
-- **Session store** is a JSON file for simplicity; swap `sessionStore.ts`
-  for Postgres/Mongo without touching `SessionManager` or the routes.
