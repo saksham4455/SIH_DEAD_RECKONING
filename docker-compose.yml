@@ -6,7 +6,7 @@ services:
     environment:
       SIH_DATABASE_URL: postgresql+asyncpg://sih:sih@db:5432/sih
       SIH_REDIS_URL: redis://redis:6379/
-      SIH_JWT_SECRET: ${SIH_JWT_SECRET}
+      SIH_JWT_SECRET: ${SIH_JWT_SECRET:-devsecret_sih_dead_reckoning_key_2026}
       SIH_JWT_ALGORITHM: HS256
       SIH_S3_ENDPOINT_URL: http://minio:9000
       SIH_S3_BUCKET: idr-models
