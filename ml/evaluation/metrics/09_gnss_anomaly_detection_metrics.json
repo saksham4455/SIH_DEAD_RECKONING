@@ -1,0 +1,7 @@
+{
+  "model_name": "GNSS_Innovation_Gating_Detector",
+  "gating_threshold_m_s": 4.0,
+  "detection_accuracy_pct": 100.0,
+  "false_alarm_rate_pct": 0.0,
+  "checkpoint_path": "c:\\flutter\\Projects\\SIH_DEAD_RECKONING\\ml\\models\\motion_quality\\checkpoints\\gnss_anomaly_detector.pth"
+}

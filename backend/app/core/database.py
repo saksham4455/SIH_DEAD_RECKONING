@@ -103,6 +103,8 @@ def get_engine() -> AsyncEngine:
                         return val
 
                 try:
+                    dbapi_conn.execute("PRAGMA journal_mode=WAL")
+                    dbapi_conn.execute("PRAGMA busy_timeout=10000")
                     dbapi_conn.execute("PRAGMA foreign_keys=ON")
                     dbapi_conn.create_function("GeomFromEWKT", 1, lambda val: val)
                     dbapi_conn.create_function("ST_GeomFromEWKT", 1, lambda val: val)

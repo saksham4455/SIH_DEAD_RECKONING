@@ -1,0 +1,34 @@
+{
+  "outage_5s": {
+    "duration_s": 5,
+    "distance_traveled_m": 35.25,
+    "classical_dr_error_m": 0.08,
+    "ai_speed_dr_error_m": 1.14,
+    "sih_ai_ukf_error_m": 1.03,
+    "drift_reduction_pct": -1180.05
+  },
+  "outage_10s": {
+    "duration_s": 10,
+    "distance_traveled_m": 90.83,
+    "classical_dr_error_m": 0.41,
+    "ai_speed_dr_error_m": 0.96,
+    "sih_ai_ukf_error_m": 1.01,
+    "drift_reduction_pct": -146.27
+  },
+  "outage_30s": {
+    "duration_s": 30,
+    "distance_traveled_m": 425.17,
+    "classical_dr_error_m": 1.27,
+    "ai_speed_dr_error_m": 3.63,
+    "sih_ai_ukf_error_m": 3.82,
+    "drift_reduction_pct": -201.11
+  },
+  "outage_60s": {
+    "duration_s": 60,
+    "distance_traveled_m": 600.04,
+    "classical_dr_error_m": 0.26,
+    "ai_speed_dr_error_m": 5.88,
+    "sih_ai_ukf_error_m": 6.46,
+    "drift_reduction_pct": -2352.66
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "motion_quality_model": "MotionQualityNet_v2",
+  "output_range": [
+    0.0,
+    1.0
+  ],
+  "trust_threshold": 0.65,
+  "val_mae": 0.0389,
+  "val_r2": -0.4317,
+  "best_epoch": 14,
+  "status": "SUPERVISED_TRAINED_AND_CALIBRATED"
+}

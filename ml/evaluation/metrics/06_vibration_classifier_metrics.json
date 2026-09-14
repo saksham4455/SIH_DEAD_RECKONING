@@ -1,0 +1,10 @@
+{
+  "vibration_f1_score": 1.0,
+  "target_gateway_met": true,
+  "classes": [
+    "LOW",
+    "NORMAL",
+    "HIGH"
+  ],
+  "best_epoch": 2
+}

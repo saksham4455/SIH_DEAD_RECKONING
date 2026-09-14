@@ -1,0 +1,10 @@
+{
+  "model_name": "SpeedEstimatorNet_v2",
+  "avg_cpu_latency_ms": 4.39,
+  "p95_cpu_latency_ms": 6.67,
+  "p99_cpu_latency_ms": 13.04,
+  "throughput_hz": 227.9,
+  "target_latency_gateway_met": true,
+  "model_size_kb": 48.04,
+  "parity_verification": "SKIPPED (onnxruntime not found)"
+}

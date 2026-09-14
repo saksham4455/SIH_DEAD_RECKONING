@@ -1,0 +1,13 @@
+{
+  "speed_mae_m_s": 0.28,
+  "speed_mae_km_h": 1.01,
+  "speed_rmse_m_s": 0.366,
+  "speed_r2_score": 0.9957,
+  "median_absolute_error_m_s": 0.23,
+  "p95_error_m_s": 0.74,
+  "tier_0_30_kmh_mae_ms": 0.251,
+  "tier_30_60_kmh_mae_ms": 0.366,
+  "tier_60plus_kmh_mae_ms": 0.228,
+  "target_gateway_met": true,
+  "best_epoch": 18
+}
