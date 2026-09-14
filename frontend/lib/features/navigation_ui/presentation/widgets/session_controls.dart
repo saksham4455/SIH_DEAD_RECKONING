@@ -21,8 +21,15 @@ class SessionControls extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.surfaceBorder),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A0F172A),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -37,12 +44,14 @@ class SessionControls extends StatelessWidget {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('🚨 GNSS Blackout Mode Activated (Pure INS Propagation)'),
+                  content: Text(
+                      '🚨 GNSS Blackout Mode Activated (Pure INS Propagation)'),
                   backgroundColor: AppColors.error,
                   duration: Duration(seconds: 2),
                 ),
               );
-              Navigator.pushNamed(context, '/session', arguments: FusionMode.deadReckoning);
+              Navigator.pushNamed(context, '/session',
+                  arguments: FusionMode.deadReckoning);
             },
           ),
           _buildControlButton(
@@ -55,12 +64,14 @@ class SessionControls extends StatelessWidget {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('🌆 Urban Canyon Mode Activated (High DOP / EKF Fusion)'),
+                  content: Text(
+                      '🌆 Urban Canyon Mode Activated (High DOP / EKF Fusion)'),
                   backgroundColor: AppColors.warning,
                   duration: Duration(seconds: 2),
                 ),
               );
-              Navigator.pushNamed(context, '/session', arguments: FusionMode.gnssDegraded);
+              Navigator.pushNamed(context, '/session',
+                  arguments: FusionMode.gnssDegraded);
             },
           ),
           _buildControlButton(
@@ -93,7 +104,7 @@ class SessionControls extends StatelessWidget {
           style: IconButton.styleFrom(
             backgroundColor: accentColor.withValues(alpha: 0.12),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
         ),
@@ -110,4 +121,3 @@ class SessionControls extends StatelessWidget {
     );
   }
 }
-

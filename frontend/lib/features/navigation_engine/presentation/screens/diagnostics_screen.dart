@@ -12,11 +12,11 @@ class DiagnosticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final data = const DemoNavigationRepository().current;
     return Scaffold(
-      backgroundColor: AppColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.dark,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         title: const Text(
-          'ADVANCED DIAGNOSTICS',
+          'LOCUS  /  DIAGNOSTICS',
           style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 16,

@@ -31,7 +31,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
   double _liveSpeed = 0.0;
   double _liveHeading = 0.0;
-  double _liveLat = 28.6390; // Fallback default; overwritten by cached/GPS position
+  double _liveLat =
+      28.6390; // Fallback default; overwritten by cached/GPS position
   double _liveLon = 77.0661;
   double _liveAltitude = 0.0;
   double _liveAccuracy = 0.0;
@@ -75,14 +76,18 @@ class _NavigationScreenState extends State<NavigationScreen> {
   void _sendLiveTelemetry() {
     final activeMode = _simulateTunnelBlackout
         ? 'DEAD_RECKONING'
-        : (_simulateUrbanCanyon ? 'GNSS_DEGRADED' : (_hasGpsFix ? 'GNSS_LOCKED' : 'DEAD_RECKONING'));
+        : (_simulateUrbanCanyon
+            ? 'GNSS_DEGRADED'
+            : (_hasGpsFix ? 'GNSS_LOCKED' : 'DEAD_RECKONING'));
     _backendClient.sendTelemetry(
       latitude: _liveLat,
       longitude: _liveLon,
       heading: _liveHeading,
       speed: _liveSpeed,
       altitude: _liveAltitude > 0 ? _liveAltitude : null,
-      confidence: _simulateTunnelBlackout ? 0.94 : (_simulateUrbanCanyon ? 0.88 : (_hasGpsFix ? 0.99 : 0.85)),
+      confidence: _simulateTunnelBlackout
+          ? 0.94
+          : (_simulateUrbanCanyon ? 0.88 : (_hasGpsFix ? 0.99 : 0.85)),
       gnssAvailable: _hasGpsFix && !_simulateTunnelBlackout,
       mode: activeMode,
     );
@@ -234,8 +239,10 @@ class _NavigationScreenState extends State<NavigationScreen> {
         final gz = values[5];
 
         // Vehicle auto-alignment transform & Non-Holonomic Constraints (NHC)
-        final vehicleAccel = _alignmentEngine.transformToVehicleFrame(ax, ay, az);
-        final nhcAccel = _alignmentEngine.applyNonHolonomicConstraints(vehicleAccel);
+        final vehicleAccel =
+            _alignmentEngine.transformToVehicleFrame(ax, ay, az);
+        final nhcAccel =
+            _alignmentEngine.applyNonHolonomicConstraints(vehicleAccel);
 
         final mag = sqrt(ax * ax + ay * ay + az * az);
         final netAccel = (mag - 9.81).abs();
@@ -268,7 +275,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 _stationaryCounter = 0;
                 final forwardAccel = nhcAccel[0];
                 if (forwardAccel.abs() > 0.45) {
-                  _liveSpeed = (_liveSpeed + forwardAccel * 0.05).clamp(0.0, 35.0);
+                  _liveSpeed =
+                      (_liveSpeed + forwardAccel * 0.05).clamp(0.0, 35.0);
                 } else if (_liveSpeed > 0) {
                   _liveSpeed = _liveSpeed * 0.94;
                 }
@@ -289,7 +297,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
     });
 
     // High-frequency Real Hardware Magnetometer Stream for zero-lag compass arrow turning
-    _magSubscription = magnetometerEventStream(samplingPeriod: SensorInterval.gameInterval).listen((event) {
+    _magSubscription =
+        magnetometerEventStream(samplingPeriod: SensorInterval.gameInterval)
+            .listen((event) {
       final headingRad = atan2(event.x, event.y);
       double targetDeg = headingRad * 180 / pi;
       if (targetDeg < 0) targetDeg += 360;
@@ -339,16 +349,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
     final speedKmh = (_liveSpeed * 3.6).toStringAsFixed(1);
 
     return Scaffold(
-      backgroundColor: AppColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.dark,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'LIVE NAVIGATION SESSION',
+          'LOCUS  /  LIVE NAVIGATION',
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
@@ -367,7 +377,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
               // Automatic Real-Time Navigation Status Banner
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: _simulateTunnelBlackout
                       ? AppColors.error.withValues(alpha: 0.15)
@@ -391,7 +402,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
                           ? Icons.gps_off
                           : (_simulateUrbanCanyon
                               ? Icons.location_city
-                              : (!_hasGpsFix ? Icons.sensors_off : Icons.navigation)),
+                              : (!_hasGpsFix
+                                  ? Icons.sensors_off
+                                  : Icons.navigation)),
                       color: (_simulateTunnelBlackout || !_hasGpsFix)
                           ? AppColors.error
                           : (_simulateUrbanCanyon
@@ -444,11 +457,13 @@ class _NavigationScreenState extends State<NavigationScreen> {
               const SizedBox(height: 10),
 
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.cyan.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.cyan.withValues(alpha: 0.25)),
+                  border:
+                      Border.all(color: AppColors.cyan.withValues(alpha: 0.25)),
                 ),
                 child: Column(
                   children: [

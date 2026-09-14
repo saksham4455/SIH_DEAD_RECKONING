@@ -11,7 +11,9 @@ class SihApp extends StatelessWidget {
     return MaterialApp(
       title: AppConstants.appTitle,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
       initialRoute: AppRoutes.dashboard,
       routes: AppRoutes.routes,
     );

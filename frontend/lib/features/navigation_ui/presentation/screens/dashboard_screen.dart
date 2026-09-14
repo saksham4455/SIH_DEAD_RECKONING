@@ -37,7 +37,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   double _liveSpeed = 0.0;
   double _liveHeading = 0.0;
-  double _liveLat = 28.6390; // Fallback default; overwritten by cached/GPS position
+  double _liveLat =
+      28.6390; // Fallback default; overwritten by cached/GPS position
   double _liveLon = 77.0661;
   double _liveAltitude = 0.0;
   double _liveAccuracy = 0.0;
@@ -81,14 +82,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _sendLiveTelemetry() {
     final activeMode = _simulateTunnelBlackout
         ? 'DEAD_RECKONING'
-        : (_simulateUrbanCanyon ? 'GNSS_DEGRADED' : (_hasGpsFix ? 'GNSS_LOCKED' : 'DEAD_RECKONING'));
+        : (_simulateUrbanCanyon
+            ? 'GNSS_DEGRADED'
+            : (_hasGpsFix ? 'GNSS_LOCKED' : 'DEAD_RECKONING'));
     _backendClient.sendTelemetry(
       latitude: _liveLat,
       longitude: _liveLon,
       heading: _liveHeading,
       speed: _liveSpeed,
       altitude: _liveAltitude > 0 ? _liveAltitude : null,
-      confidence: _simulateTunnelBlackout ? 0.94 : (_simulateUrbanCanyon ? 0.88 : (_hasGpsFix ? 0.99 : 0.85)),
+      confidence: _simulateTunnelBlackout
+          ? 0.94
+          : (_simulateUrbanCanyon ? 0.88 : (_hasGpsFix ? 0.99 : 0.85)),
       gnssAvailable: _hasGpsFix && !_simulateTunnelBlackout,
       mode: activeMode,
     );
@@ -216,8 +221,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final az = values[2];
 
         // 1. Phone-to-Vehicle Auto Alignment Calibration
-        final vehicleAccel = _alignmentEngine.transformToVehicleFrame(ax, ay, az);
-        final nhcAccel = _alignmentEngine.applyNonHolonomicConstraints(vehicleAccel);
+        final vehicleAccel =
+            _alignmentEngine.transformToVehicleFrame(ax, ay, az);
+        final nhcAccel =
+            _alignmentEngine.applyNonHolonomicConstraints(vehicleAccel);
 
         final mag = sqrt(ax * ax + ay * ay + az * az);
         final netAccel = (mag - 9.81).abs();
@@ -240,7 +247,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // Physical movement detected (walking steps or vehicle engine motion)
                 final forwardAccel = nhcAccel[0];
                 if (forwardAccel.abs() > 0.45) {
-                  _liveSpeed = (_liveSpeed + forwardAccel * 0.05).clamp(0.0, 35.0);
+                  _liveSpeed =
+                      (_liveSpeed + forwardAccel * 0.05).clamp(0.0, 35.0);
                 } else if (_liveSpeed > 0) {
                   _liveSpeed = _liveSpeed * 0.94;
                 }
@@ -279,7 +287,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
 
     // High-frequency Real Hardware Magnetometer Stream for zero-lag compass arrow turning (<10ms)
-    _magSubscription = magnetometerEventStream(samplingPeriod: SensorInterval.gameInterval).listen((event) {
+    _magSubscription =
+        magnetometerEventStream(samplingPeriod: SensorInterval.gameInterval)
+            .listen((event) {
       final headingRad = atan2(event.x, event.y);
       double targetDeg = headingRad * 180 / pi;
       if (targetDeg < 0) targetDeg += 360;
@@ -339,7 +349,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final liveSatelliteBreakdown = (!_hasGpsFix || _simulateTunnelBlackout)
         ? const SatelliteBreakdownModel(
-            navIC: SatelliteInfoModel(count: 4, signalStrength: 38.5), // Retain NavIC constellation lock in memory
+            navIC: SatelliteInfoModel(
+                count: 4,
+                signalStrength:
+                    38.5), // Retain NavIC constellation lock in memory
             gps: SatelliteInfoModel(count: 0, signalStrength: 0.0),
             galileo: SatelliteInfoModel(count: 0, signalStrength: 0.0),
             glonass: SatelliteInfoModel(count: 0, signalStrength: 0.0),
@@ -380,7 +393,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final rollDeg = (_alignmentEngine.roll * 180 / pi).toStringAsFixed(1);
 
     return Scaffold(
-      backgroundColor: AppColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -392,54 +405,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'SIH 2026 // DEAD RECKONING',
-                        style: TextStyle(
-                          color: AppColors.cyan,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      const Text(
-                        'Telemetry Dashboard',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _backendClient.syncState == BackendSyncState.connected
-                                  ? AppColors.healthy
-                                  : AppColors.warning,
-                            ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'LOCUS  /  SIH 2026',
+                          style: TextStyle(
+                            color: AppColors.cyan,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
                           ),
-                          const SizedBox(width: 5),
-                          Text(
-                            _backendClient.syncState == BackendSyncState.connected
-                                ? 'BACKEND LIVE: ${_backendClient.recordsSent} FRAMES'
-                                : 'BACKEND: LOCAL BUFFERING',
-                            style: const TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        ),
+                        SizedBox(height: 2),
+                        const Text(
+                          'Seamless positioning beyond GNSS.',
+                          maxLines: 2,
+                          softWrap: true,
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _backendClient.syncState ==
+                                        BackendSyncState.connected
+                                    ? AppColors.healthy
+                                    : AppColors.warning,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Text(
+                                _backendClient.syncState ==
+                                        BackendSyncState.connected
+                                    ? 'BACKEND LIVE: ${_backendClient.recordsSent} FRAMES'
+                                    : 'BACKEND: LOCAL BUFFERING',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   Container(
                     padding:
@@ -506,7 +529,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ? Icons.gps_off
                               : (_simulateUrbanCanyon
                                   ? Icons.location_city
-                                  : (!_hasGpsFix ? Icons.sensors_off : Icons.sensors)),
+                                  : (!_hasGpsFix
+                                      ? Icons.sensors_off
+                                      : Icons.sensors)),
                           color: (_simulateTunnelBlackout || !_hasGpsFix)
                               ? AppColors.error
                               : (_simulateUrbanCanyon
@@ -528,11 +553,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             ? 'AUTO-DETECTED: PURE INS (NO GPS PERMISSION)'
                                             : 'AUTO-DETECTED: NOMINAL GNSS LOCK')),
                                 style: TextStyle(
-                                  color: (_simulateTunnelBlackout || !_hasGpsFix)
-                                      ? AppColors.error
-                                      : (_simulateUrbanCanyon
-                                          ? AppColors.warning
-                                          : AppColors.textPrimary),
+                                  color:
+                                      (_simulateTunnelBlackout || !_hasGpsFix)
+                                          ? AppColors.error
+                                          : (_simulateUrbanCanyon
+                                              ? AppColors.warning
+                                              : AppColors.textPrimary),
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -572,9 +598,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
                         Text(
-                          _alignmentEngine.isCalibrated ? 'CALIBRATED 🟢' : 'CALIBRATING...',
+                          _alignmentEngine.isCalibrated
+                              ? 'CALIBRATED 🟢'
+                              : 'CALIBRATING...',
                           style: TextStyle(
-                            color: _alignmentEngine.isCalibrated ? AppColors.healthy : AppColors.textMuted,
+                            color: _alignmentEngine.isCalibrated
+                                ? AppColors.healthy
+                                : AppColors.textMuted,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -640,7 +670,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 : 'Pure INS Outage Fix')),
                     accentColor: _simulateTunnelBlackout
                         ? AppColors.error
-                        : (_simulateUrbanCanyon ? AppColors.warning : AppColors.gps),
+                        : (_simulateUrbanCanyon
+                            ? AppColors.warning
+                            : AppColors.gps),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   TelemetryCard(
@@ -718,7 +750,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ? FusionMode.deadReckoning
                         : (_simulateUrbanCanyon
                             ? FusionMode.gnssDegraded
-                            : (_hasGpsFix ? FusionMode.gnssLocked : FusionMode.deadReckoning));
+                            : (_hasGpsFix
+                                ? FusionMode.gnssLocked
+                                : FusionMode.deadReckoning));
                     Navigator.pushNamed(context, '/session', arguments: mode);
                   },
                   icon: const Icon(Icons.play_arrow, color: AppColors.cyan),
@@ -755,5 +789,3 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
-
-

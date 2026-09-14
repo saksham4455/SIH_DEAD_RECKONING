@@ -26,9 +26,11 @@ class _NavigationMapState extends State<NavigationMap> {
   void didUpdateWidget(covariant NavigationMap oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.navigationState.latitude != widget.navigationState.latitude ||
-        oldWidget.navigationState.longitude != widget.navigationState.longitude) {
+        oldWidget.navigationState.longitude !=
+            widget.navigationState.longitude) {
       _mapController.move(
-        LatLng(widget.navigationState.latitude, widget.navigationState.longitude),
+        LatLng(
+            widget.navigationState.latitude, widget.navigationState.longitude),
         _mapController.camera.zoom,
       );
     }
@@ -45,14 +47,14 @@ class _NavigationMapState extends State<NavigationMap> {
       height: 240,
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cyan.withValues(alpha: 0.4), width: 1.5),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.surfaceBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: AppColors.cyan.withValues(alpha: 0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
+            color: const Color(0x140F172A),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -83,7 +85,8 @@ class _NavigationMapState extends State<NavigationMap> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate: 'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png?api_key=9ca55c4e-7cb5-45b9-9da3-10421c141cbe',
+                  urlTemplate:
+                      'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png?api_key=9ca55c4e-7cb5-45b9-9da3-10421c141cbe',
                   userAgentPackageName: 'SIH2026-DeadReckoning',
                   tileProvider: BundledOfflineTileProvider(),
                   minNativeZoom: 11,
@@ -131,7 +134,8 @@ class _NavigationMapState extends State<NavigationMap> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: AppColors.cyan.withValues(alpha: 0.2),
-                                border: Border.all(color: AppColors.cyan, width: 1.5),
+                                border: Border.all(
+                                    color: AppColors.cyan, width: 1.5),
                               ),
                             ),
                             const Icon(
@@ -153,15 +157,17 @@ class _NavigationMapState extends State<NavigationMap> {
               top: 12,
               left: 12,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: AppColors.surface.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.cyan.withValues(alpha: 0.4)),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.surfaceBorder),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.shield_outlined, size: 13, color: AppColors.cyan),
+                    Icon(Icons.shield_outlined,
+                        size: 13, color: AppColors.cyan),
                     SizedBox(width: 5),
                     const Text(
                       'STADIA MAPS // PURE INS',
@@ -183,10 +189,11 @@ class _NavigationMapState extends State<NavigationMap> {
               left: 12,
               right: 12,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.dark.withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(6),
+                  color: AppColors.textPrimary.withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: AppColors.surfaceBorder),
                 ),
                 child: Row(
@@ -273,4 +280,3 @@ class TacticalOfflineGridPainter extends CustomPainter {
     return oldDelegate.heading != heading;
   }
 }
-
