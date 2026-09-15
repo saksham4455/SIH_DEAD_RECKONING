@@ -124,6 +124,9 @@ class _NavigationMapState extends State<NavigationMap> {
                       width: 54,
                       height: 54,
                       child: Transform.rotate(
+                        // Heading in degrees CW from North → radians CW.
+                        // Flutter Transform.rotate is CW in screen coords (Y-down),
+                        // so positive heading maps directly.
                         angle: widget.navigationState.heading * pi / 180,
                         child: Stack(
                           alignment: Alignment.center,
@@ -202,7 +205,7 @@ class _NavigationMapState extends State<NavigationMap> {
                     Text(
                       '${widget.navigationState.latitude.toStringAsFixed(4)}° N, ${widget.navigationState.longitude.toStringAsFixed(4)}° E',
                       style: const TextStyle(
-                        color: AppColors.textPrimary,
+                        color: AppColors.surface,
                         fontSize: 11,
                         fontFamily: 'monospace',
                         fontWeight: FontWeight.bold,

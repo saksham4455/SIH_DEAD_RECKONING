@@ -290,7 +290,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _magSubscription =
         magnetometerEventStream(samplingPeriod: SensorInterval.gameInterval)
             .listen((event) {
-      final headingRad = atan2(event.x, event.y);
+      // Negate X: magnetometer reports geomagnetic field IN the device frame;
+      // when the device faces East the field enters through –x, so atan2(–x, y)
+      // correctly yields the device's compass heading FROM magnetic north.
+      final headingRad = atan2(-event.x, event.y);
       double targetDeg = headingRad * 180 / pi;
       if (targetDeg < 0) targetDeg += 360;
 
